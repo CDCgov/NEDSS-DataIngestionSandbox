@@ -1,0 +1,15 @@
+##  docker-compose up --build
+#
+#version: '3'
+#services:
+#  app:
+#    container_name: kafka-consumer-with-dlq-demo
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - "9001:9001"
+#    environment:
+#      - SPRING_DATA_MONGODB_URI=mongodb://host.docker.internal:27017
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/test-consumer
+#      - SPRING_KAFKA_BOOTSTRAP_SERVERS=broker:29092

@@ -1,0 +1,14 @@
+#  docker-compose up --build
+
+#version: '3'
+#services:
+#  app:
+#    container_name: kafka-connector-demo
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8102:8102"
+#    environment:
+#      - SPRING_DATA_MONGODB_URI=mongodb://host.docker.internal:27017
+#

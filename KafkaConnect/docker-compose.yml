@@ -1,0 +1,131 @@
+---
+version: '2'
+services:
+  #use confluent image to build on premise kafka
+  #we need pre-built mongo connector. It works without any issue with confluent image
+  #tested mongo connector with apache kafka, build keep failing due missing package.
+  #we do on premise build so, shouldn't worry about confluent cloud factor
+  #THIS BUILD HAS USE KRAFT MODE-- NO ZOOKEEPER
+  #docker-compose up -d
+  broker:
+    image: confluentinc/cp-kafka:7.3.0
+    hostname: broker
+    container_name: broker
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENERS: 'INTERNAL://broker:29092,CONTROLLER://broker:29093,EXTERNAL://broker:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://broker:29092,EXTERNAL://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+    volumes:
+      - ./kafka_update_run.sh:/tmp/kafka_update_run.sh
+    command: "bash -c 'if [ ! -f /tmp/kafka_update_run.sh ]; then echo \"ERROR: Did you forget the kafka_update_run.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/kafka_update_run.sh && /etc/confluent/docker/run ; fi'"
+
+  # schema layer for kafka, assigned id for data, etc...
+  # this is require to use mongo connector, other the connector will error out
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.3.0
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - broker
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+
+  #CONNECTOR, build info frm kafka-connect.Dockerfile
+  connect:
+    image: confluentinc/cp-kafka-connect-base:7.2.2
+    build:
+      context: .
+      dockerfile: kafka_connect.Dockerfile
+    hostname: connect
+    container_name: connect
+    depends_on:
+      - broker
+      - schema-registry
+    ports:
+      - "8083:8083"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: 'broker:29092'
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_GROUP_ID: compose-connect-group
+      CONNECT_CONFIG_STORAGE_TOPIC: docker-connect-configs
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_OFFSET_STORAGE_TOPIC: docker-connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      # CLASSPATH required due to CC-2422
+      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-7.3.0.jar
+      CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
+      CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+      CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
+
+  # Rest proxy for kafka cluster
+  # support interaction with cluster
+  rest-proxy:
+    image: confluentinc/cp-kafka-rest:7.3.0
+    depends_on:
+      - broker
+      - schema-registry
+    ports:
+      - 8082:8082
+    hostname: rest-proxy
+    container_name: rest-proxy
+    environment:
+      KAFKA_REST_HOST_NAME: rest-proxy
+      KAFKA_REST_BOOTSTRAP_SERVERS: 'broker:29092'
+      KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
+      KAFKA_REST_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+
+  # Consumer Demo
+  spring-comsumer-demo:
+    # image: spring-comsumer-demo
+    build:
+      context: .
+      dockerfile: demo_consumer.Dockerfile
+    container_name: spring-comsumer-demo
+    depends_on:
+      - broker
+    ports:
+      - "9001:9001"
+    environment:
+      SPRING_DATA_MONGODB_URI: 'mongodb://host.docker.internal:27017'
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://host.docker.internal:5432/test-consumer'
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: 'broker:29092'
+
+  # Connector Demo
+  kafka-connector-demo:
+    # image: kafka-connector-demo-app
+    build:
+      context: .
+      dockerfile: demo_connector.Dockerfile
+    container_name: kafka-connector-demo
+    depends_on:
+      - broker
+    ports:
+      - "8102:8102"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://host.docker.internal:27017
