@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: rest-proxy
+  name: rest-proxy
+spec:
+  ports:
+    - port: 30082
+      name: outport
+      targetPort: 30082
+      nodePort: 30082
+  type: NodePort
+  selector:
+    service: rest-proxy
