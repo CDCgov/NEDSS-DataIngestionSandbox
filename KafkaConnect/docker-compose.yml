@@ -6,7 +6,7 @@ services:
   #tested mongo connector with apache kafka, build keep failing due missing package.
   #we do on premise build so, shouldn't worry about confluent cloud factor
   #THIS BUILD HAS USE KRAFT MODE-- NO ZOOKEEPER
-  #docker-compose up -d
+  #docker-compose up -d --build
   broker:
     image: confluentinc/cp-kafka:7.3.0
     hostname: broker
@@ -75,14 +75,19 @@ services:
       CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      # CONNECT_KEY_CONVERTER_SCHEMA_ENABLE: false
       CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      # CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      # CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      # CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      # CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       # CLASSPATH required due to CC-2422
       CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-7.3.0.jar
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
       CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
-
+    command: "bash -c 'if [ ! -d /usr/share/confluent-hub-components/kafka-connect-mongodb ]; then echo \"WARNING: Did not find directory for kafka-connect-mongodb (did you remember to run: docker-compose up -d --build ?)\"; fi ; /etc/confluent/docker/run'"
   # Rest proxy for kafka cluster
   # support interaction with cluster
   rest-proxy:
