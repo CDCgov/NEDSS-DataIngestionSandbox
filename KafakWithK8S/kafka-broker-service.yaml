@@ -8,12 +8,6 @@ spec:
   selector:
     service: kafka
   ports:
-    # - name: internal
-    #   port: 29092
-    #   targetPort: 29092
-    # - name: external
-    #   port: 9092
-    #   targetPort: 9092
     - name: internal
       port: 29092
       targetPort: 29092
