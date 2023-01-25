@@ -1,6 +1,9 @@
 # Compiled class file
 *.class
 
+nbsadapter/target/
+nbsadapter/build/
+
 # Log file
 *.log
 
