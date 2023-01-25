@@ -31,9 +31,9 @@ kafka:
     xml-messages-endpoint: "kafka:xml-msgs-topic?brokers=host.docker.internal:9092"    
     
 hashivault:
-  authendpoint:    ${vault_base_url}/v1/auth/cert/login
-  secretsendpoint: ${vault_base_url}/v1/secrets/${spring.application.name}/${spring.profiles.active}
-  encryptendpoint: ${vault_base_url}/v1/transit/encrypt/msg-key    
+  authendpoint:    http://host.docker.internal:8200/v1/auth/cert/login
+  secretsendpoint: http://host.docker.internal:8200/v1/secrets/${spring.application.name}/${spring.profiles.active}
+  encryptendpoint: http://host.docker.internal:8200/v1/transit/encrypt/msg-key
     
 thread-pooling:
   core-pool-size: 25

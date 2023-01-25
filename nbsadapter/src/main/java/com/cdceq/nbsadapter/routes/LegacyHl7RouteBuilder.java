@@ -53,28 +53,44 @@ public class LegacyHl7RouteBuilder extends RouteBuilder {
         .end();
 
 		from(hl7FilesDirectoryUrl)
-		.routeId("Legacy.Hl7.FilesConsumer.Route")
-		.to("seda:hl7_file_processing_route", "seda:kafka_hl7_producer_route")
+		.routeId("FilesConsumer.Hl7.Route")
+		.to("seda:hl7_convert_to_xml", "seda:hl7_send_to_kafka", "seda:hl7_persist_to_mongo_db")
 		.end();
 
-		from("seda:kafka_hl7_producer_route")
+		from("seda:process_hl7_payload")
+		.routeId("RestAPI.Hl7.Route")
+		.log("Hl7: ${body}")
+		.to("seda:hl7_send_to_kafka", "seda:hl7_persist_to_mongo_db")
+		.end();
+
+		from("seda:hl7_send_to_kafka")
 		.to(hl7MsgsEndpoint)
 		.log("Dispatched to kafka hl7 messages topic")
 		.end();
 
-		from("seda:hl7_file_processing_route")
-		.log("Processing file ${headers.CamelFileName} from file system")
-		.process(hl7ToXmlTransformer)
-		.log("Xml: ${body}")
-		.to("seda:xml_persist_to_db_route", "seda:kafka_xml_producer_route")
+		from("seda:hl7_persist_to_mongo_db")
+		//.to(hl7MsgsEndpoint)
+		.log("Persisted hl7 message to mongo db")
 		.end();
 
-		from("seda:xml_persist_to_db_route")
+		from("seda:hl7_convert_to_xml")
+		.log("Processing file ${headers.CamelFileName} from file system")
+		.process(hl7ToXmlTransformer)
+		.to("seda:process_xml_payload")
+		.end();
+
+		// entry point from internal or controller
+		from("seda:process_xml_payload")
+		.log("Xml: ${body}")
+		.to("seda:xml_persist_to_nbs_sqlserver_db", "seda:xml_send_to_kafka")
+		.end();
+
+		from("seda:xml_persist_to_nbs_sqlserver_db")
 		.process(xmlDataPersister)
 		.log("Processed file ${headers.CamelFileName}, persisted as xml message to sql server database")
 		.end();
 
-		from("seda:kafka_xml_producer_route")
+		from("seda:xml_send_to_kafka")
 		.to(xmlMsgsEndpoint)
 		.log("Dispatched to kafka xml messages topic")
 		.end();

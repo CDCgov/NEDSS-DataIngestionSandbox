@@ -3,6 +3,7 @@
 
 nbsadapter/target/
 nbsadapter/build/
+nbsadapter/.idea/
 
 # Log file
 *.log
