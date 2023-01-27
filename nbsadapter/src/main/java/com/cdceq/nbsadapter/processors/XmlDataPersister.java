@@ -32,7 +32,7 @@ public class XmlDataPersister implements Processor {
     public void process(Exchange exchange) throws Exception {
         try {
             String xmlStr = exchange.getIn().getBody(String.class);
-            dataServiceProvider.saveMessage(xmlStr);
+            dataServiceProvider.saveXmlMessage(xmlStr);
         }
         catch(Exception e) {
             logger.error(e.getMessage());

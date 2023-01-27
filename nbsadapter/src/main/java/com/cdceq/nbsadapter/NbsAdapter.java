@@ -5,6 +5,7 @@ import 	org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import	com.vault.utils.VaultValuesResolver;
 import	com.cdceq.nbsadapter.configs.DataSourceConfig;
+import	com.cdceq.nbsadapter.configs.MongoDBConfig;
 
 @SpringBootApplication
 public class NbsAdapter {
@@ -14,6 +15,7 @@ public class NbsAdapter {
 	    				  NbsAdapter.class
 	    				, VaultValuesResolver.class
 	    				, DataSourceConfig.class
+						, MongoDBConfig.class
 	    		},
 	    		args);
 	}

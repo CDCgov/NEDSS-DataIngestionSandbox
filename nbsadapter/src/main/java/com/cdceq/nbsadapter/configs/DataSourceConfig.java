@@ -34,16 +34,11 @@ public class DataSourceConfig {
     @DependsOn(value = {
         "vaultValuesResolver"
     })
-    public DataSource dataSource() {
+	public DataSource dataSource() {
 		String driverClassName = VaultValuesResolver.getVaultKeyValue(vaultDriverClassName);
 		String dbUrl = VaultValuesResolver.getVaultKeyValue(vaultDbUrl);
 		String dbUserName = VaultValuesResolver.getVaultKeyValue(vaultDbUserName);
 		String dbUserPassword = VaultValuesResolver.getVaultKeyValue(vaultDbUserPassword);
-		
-		logger.info("!!! (values from vault) driverClassName - {}", driverClassName);
-		logger.info("!!! (values from vault) dbUrl - {}", dbUrl);
-		logger.info("!!! (values from vault) dbUserName - {}", dbUserName);
-		logger.info("!!! (values from vault) dbUserPassword - {}", dbUserPassword);
     	
         DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
         

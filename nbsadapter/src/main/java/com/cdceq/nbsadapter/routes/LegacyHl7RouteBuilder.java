@@ -14,19 +14,23 @@ import  org.slf4j.LoggerFactory;
 import  com.cdceq.nbsadapter.exceptions.ValidationException;
 import	com.cdceq.nbsadapter.processors.Hl7ToXmlTransformer;
 import	com.cdceq.nbsadapter.processors.XmlDataPersister;
+import 	com.cdceq.nbsadapter.processors.Hl7DataPersister;
+
+import	com.vault.utils.VaultValuesResolver;;
+
 @Component
 @NoArgsConstructor
 public class LegacyHl7RouteBuilder extends RouteBuilder {
     private static final Logger logger = LoggerFactory.getLogger(LegacyHl7RouteBuilder.class);
 
 	@Value("${report-stream.hl7-files-dir-url}")
-	private String hl7FilesDirectoryUrl;
+	private String vaultHl7FilesDirectory;
 
 	@Value("${kafka.outbound.hl7-messages-endpoint}")
-	private String 	hl7MsgsEndpoint;
+	private String 	vaultHl7MessagesEndpoint;
 
 	@Value("${kafka.outbound.xml-messages-endpoint}")
-	private String 	xmlMsgsEndpoint;
+	private String 	vaultXmlMessagesEndpoint;
 
 	@Autowired
 	private Hl7ToXmlTransformer hl7ToXmlTransformer;
@@ -34,9 +38,16 @@ public class LegacyHl7RouteBuilder extends RouteBuilder {
 	@Autowired
 	private XmlDataPersister xmlDataPersister;
 
+	@Autowired
+	private Hl7DataPersister hl7DataPersister;
+
     @Override
     public void configure() {
+		String hl7FilesDirectoryUrl = VaultValuesResolver.getVaultKeyValue(vaultHl7FilesDirectory);
 		logger.info("Report stream hl7 files directory = {}", hl7FilesDirectoryUrl);
+
+		String hl7MsgsEndpoint = VaultValuesResolver.getVaultKeyValue(vaultHl7MessagesEndpoint);
+		String xmlMsgsEndpoint = VaultValuesResolver.getVaultKeyValue(vaultXmlMessagesEndpoint);
 
         onException(ValidationException.class)
         .log("Observed validation exception")
@@ -54,12 +65,14 @@ public class LegacyHl7RouteBuilder extends RouteBuilder {
 
 		from(hl7FilesDirectoryUrl)
 		.routeId("FilesConsumer.Hl7.Route")
+		.setHeader("HL7DATASOURCE", constant("FileAPI"))
 		.to("seda:hl7_convert_to_xml", "seda:hl7_send_to_kafka", "seda:hl7_persist_to_mongo_db")
 		.end();
 
 		from("seda:process_hl7_payload")
 		.routeId("RestAPI.Hl7.Route")
 		.log("Hl7: ${body}")
+		.setHeader("HL7DATASOURCE", constant("RestAPI"))
 		.to("seda:hl7_send_to_kafka", "seda:hl7_persist_to_mongo_db")
 		.end();
 
@@ -69,7 +82,7 @@ public class LegacyHl7RouteBuilder extends RouteBuilder {
 		.end();
 
 		from("seda:hl7_persist_to_mongo_db")
-		//.to(hl7MsgsEndpoint)
+		.process(hl7DataPersister)
 		.log("Persisted hl7 message to mongo db")
 		.end();
 

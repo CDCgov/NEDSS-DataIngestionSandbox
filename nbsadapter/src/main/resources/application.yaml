@@ -21,15 +21,19 @@ spring:
     url: vault_nbsdb_url
     username: vault_nbsdb_username
     password: vault_nbsdb_password
-    
+
+mongo:
+    url: vault_mongo_url
+    dbname: vault_mongo_dbname
+
 report-stream:
-  hl7-files-dir-url: file:/tmp/hl7files
+  hl7-files-dir-url: vault_hl7_files_directory
 
 kafka:
   outbound:
-    hl7-messages-endpoint: "kafka:hl7-msgs-topic?brokers=host.docker.internal:9092"
-    xml-messages-endpoint: "kafka:xml-msgs-topic?brokers=host.docker.internal:9092"    
-    
+    hl7-messages-endpoint: vault_hl7_messages_endpoint
+    xml-messages-endpoint: vault_xml_messages_endpoint
+
 hashivault:
   authendpoint:    http://host.docker.internal:8200/v1/auth/cert/login
   secretsendpoint: http://host.docker.internal:8200/v1/secrets/${spring.application.name}/${spring.profiles.active}

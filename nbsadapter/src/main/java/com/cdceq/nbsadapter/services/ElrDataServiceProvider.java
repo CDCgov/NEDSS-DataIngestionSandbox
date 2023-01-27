@@ -27,7 +27,7 @@ public class ElrDataServiceProvider {
     @Autowired
     private NbsInterfaceRepository nbsInterfaceRepo;
     
-    public boolean saveMessage(String msgXml) {
+    public boolean saveXmlMessage(String msgXml) {
     	EntityNbsInterface msg = new EntityNbsInterface();
     	
     	msg.setPayload(msgXml);

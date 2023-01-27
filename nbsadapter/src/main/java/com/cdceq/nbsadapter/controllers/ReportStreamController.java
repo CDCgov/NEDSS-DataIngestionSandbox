@@ -1,6 +1,7 @@
 package com.cdceq.nbsadapter.controllers;
 
 import	com.cdceq.nbsadapter.api.model.ElrDataPostResponse;
+import	com.cdceq.nbsadapter.api.model.Hl7DataPostResponse;
 
 import  io.swagger.annotations.Api;
 import  io.swagger.annotations.ApiOperation;
@@ -87,7 +88,7 @@ public class ReportStreamController {
     @PostMapping(path = "nbsadapter/v1/hl7")
     @ApiOperation(value = "Post HL7 data, persist to mongo db and publish to kafka topic")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = String.class)})
-    public ResponseEntity<ElrDataPostResponse> processHl7Data(
+    public ResponseEntity<Hl7DataPostResponse> processHl7Data(
                 /* @RequestHeader("AuthToken") String authToken, */
                 @RequestBody String hl7Payload) throws Exception {
     	/*
@@ -96,16 +97,14 @@ public class ReportStreamController {
     	}
     	*/
 
-        //System.out.println("hl7Payload: " + hl7Payload);
-
         exchange.getIn().setBody(hl7Payload);
         hl7ProducerTemplate.send(exchange);
 
-        ElrDataPostResponse edpr = new ElrDataPostResponse();
-        edpr.setExecutionNotes("Processed inbound hl7 data");
+        Hl7DataPostResponse dpr = new Hl7DataPostResponse();
+        dpr.setExecutionNotes("Processed inbound hl7 data");
 
         logger.info("Processed hl7 post request");
-        return new ResponseEntity<>(edpr, HttpStatus.OK);
+        return new ResponseEntity<>(dpr, HttpStatus.OK);
     }
 
     private boolean isTokenValid(String jwtToken) throws Exception {
