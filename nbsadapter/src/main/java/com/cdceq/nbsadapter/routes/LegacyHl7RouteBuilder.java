@@ -44,10 +44,10 @@ public class LegacyHl7RouteBuilder extends RouteBuilder {
     @Override
     public void configure() {
 		String hl7FilesDirectoryUrl = VaultValuesResolver.getVaultKeyValue(vaultHl7FilesDirectory);
-		logger.info("Report stream hl7 files directory = {}", hl7FilesDirectoryUrl);
-
 		String hl7MsgsEndpoint = VaultValuesResolver.getVaultKeyValue(vaultHl7MessagesEndpoint);
 		String xmlMsgsEndpoint = VaultValuesResolver.getVaultKeyValue(vaultXmlMessagesEndpoint);
+
+		logger.info("Report stream hl7 files directory = {}", hl7FilesDirectoryUrl);
 
         onException(ValidationException.class)
         .log("Observed validation exception")

@@ -26,11 +26,24 @@ import	com.vault.utils.VaultValuesResolver;
 public class MongoDBConfig extends AbstractMongoClientConfiguration {
     private static Logger logger = LoggerFactory.getLogger(MongoDBConfig.class);
 
-    @Value("${mongo.dbname}")
-    private String vaultMongoDbName;
+    //mongodb://admin:password@localhost:27017/db
+    //private static String conntStrFormat = "mongodb://%s:%s@%s:%s/%s";
+    private static String conntStrFormat = "mongodb://%s:%s/%s";
 
-    @Value("${mongo.url}")
-    private String vaultMongoUrl;
+    @Value("${mongo.host}")
+    private String vaultMongoHost;
+
+    @Value("${mongo.port}")
+    private String vaultMongoPort;
+
+    @Value("${mongo.username}")
+    private String vaultMongoUserName;
+
+    @Value("${mongo.userpassword}")
+    private String vaultMongoUserPassword;
+
+    @Value("${mongo.dbname}")
+    private String vaultMongoDBName;
 
     @DependsOn(value = {
             "vaultValuesResolver"
@@ -42,18 +55,27 @@ public class MongoDBConfig extends AbstractMongoClientConfiguration {
 
     @Override
     protected String getDatabaseName() {
-        return VaultValuesResolver.getVaultKeyValue(vaultMongoDbName);
+        return VaultValuesResolver.getVaultKeyValue(vaultMongoDBName);
     }
 
     @Override
     public MongoClient mongoClient() {
-        String strConnectionString  = VaultValuesResolver.getVaultKeyValue(vaultMongoUrl)
-                                    + File.separator
-                                    + getDatabaseName();
+        String dbHost = VaultValuesResolver.getVaultKeyValue(vaultMongoHost);
+        String dbPort = VaultValuesResolver.getVaultKeyValue(vaultMongoPort);
+        String dbName = VaultValuesResolver.getVaultKeyValue(vaultMongoDBName);
+
+        String strConnectionString  = String.format(conntStrFormat,
+                                        //VaultValuesResolver.getVaultKeyValue(vaultMongoUserName),
+                                        //VaultValuesResolver.getVaultKeyValue(vaultMongoUserPassword),
+                                        dbHost,
+                                        dbPort,
+                                        dbName);
+
         final ConnectionString connectionString = new ConnectionString(strConnectionString);
         final MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
                         .applyConnectionString(connectionString)
                         .build();
+
         return MongoClients.create(mongoClientSettings);
     }
 

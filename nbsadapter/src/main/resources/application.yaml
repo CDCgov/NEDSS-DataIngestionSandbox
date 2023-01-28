@@ -14,7 +14,7 @@ logging:
 
 ---
 spring:
-  profiles: development
+  profiles: local
   
   datasource:
     driver-class-name: vault_nbsdb_driver_class_name
@@ -23,7 +23,10 @@ spring:
     password: vault_nbsdb_password
 
 mongo:
-    url: vault_mongo_url
+    host: vault_mongo_host
+    port: vault_mongo_port
+    username: vault_mongo_username
+    userpassword: vault_mongo_userpassword
     dbname: vault_mongo_dbname
 
 report-stream:
@@ -35,9 +38,10 @@ kafka:
     xml-messages-endpoint: vault_xml_messages_endpoint
 
 hashivault:
-  authendpoint:    http://host.docker.internal:8200/v1/auth/cert/login
-  secretsendpoint: http://host.docker.internal:8200/v1/secrets/${spring.application.name}/${spring.profiles.active}
-  encryptendpoint: http://host.docker.internal:8200/v1/transit/encrypt/msg-key
+  enabled: true
+  authendpoint:    http://localhost:8200/v1/auth/cert/login
+  secretsendpoint: http://localhost:8200/v1/secrets/${spring.application.name}/${spring.profiles.active}
+  encryptendpoint: http://localhost:8200/v1/transit/encrypt/msg-key
     
 thread-pooling:
   core-pool-size: 25

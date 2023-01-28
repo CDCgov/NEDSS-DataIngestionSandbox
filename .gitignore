@@ -4,6 +4,10 @@
 nbsadapter/target/
 nbsadapter/build/
 nbsadapter/.idea/
+nbsadapter/.gradle/
+nbsadapter/environments/*/*.json
+
+ramesh/
 
 # Log file
 *.log

@@ -1,5 +1,6 @@
 package	com.vault.utils;
 
+import org.springframework.beans.factory.annotation.Value;
 import  org.springframework.boot.context.properties.ConfigurationProperties;
 import  org.springframework.context.annotation.Configuration;
 
@@ -58,7 +59,10 @@ public class VaultValuesResolver {
 	private String authendpoint;
     private String secretsendpoint;
     private String encryptendpoint;
-	
+
+    @Value("${hashivault.enabled}")
+    private boolean bHashiVaultEnabled = true;
+
 	public static VaultValuesResolver getInstance() {
 		return instance;
 	}
@@ -93,7 +97,12 @@ public class VaultValuesResolver {
 		if(null != knownSecrets) {
 			return;
 		}
-		
+
+        if( !bHashiVaultEnabled ) {
+            knownSecrets = getDefaulSecrets();
+            return;
+        }
+
 		try {
 			knownSecrets = getSecrets();
 		}
@@ -252,5 +261,10 @@ public class VaultValuesResolver {
         	logger.error("Non-ssl client initialization error", e);
             throw e;
         }
-    }	
+    }
+
+    private HashMap<String, String> getDefaulSecrets() {
+        HashMap<String, String> localSecrets = new HashMap<String, String>();
+        return localSecrets;
+    }
 }

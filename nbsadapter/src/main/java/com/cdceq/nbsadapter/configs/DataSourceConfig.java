@@ -28,8 +28,8 @@ public class DataSourceConfig {
 	private String vaultDbUserName;
 	
 	@Value("${spring.datasource.password}")
-	private String vaultDbUserPassword;	
-	
+	private String vaultDbUserPassword;
+
     @Bean("dataSource")
     @DependsOn(value = {
         "vaultValuesResolver"
@@ -39,7 +39,7 @@ public class DataSourceConfig {
 		String dbUrl = VaultValuesResolver.getVaultKeyValue(vaultDbUrl);
 		String dbUserName = VaultValuesResolver.getVaultKeyValue(vaultDbUserName);
 		String dbUserPassword = VaultValuesResolver.getVaultKeyValue(vaultDbUserPassword);
-    	
+
         DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
         
         dataSourceBuilder.driverClassName(driverClassName);
