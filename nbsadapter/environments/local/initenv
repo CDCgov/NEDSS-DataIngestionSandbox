@@ -5,9 +5,6 @@ VAULT_ADDR=http://localhost:8200
 VAULT_TOKEN=nj101
 export VAULT_ADDR VAULT_TOKEN
 
-/opt/homebrew/opt/vault/bin/vault secrets enable -version=1 -path kv kv
-/opt/homebrew/opt/vault/bin/vault secrets enable -version=1 -path secrets kv
-
 curl $VAULT_ADDR/v1/secrets/nbsadapter/local -d @nbsadapter.local.json -H "X-Vault-Token: nj101" -X POST
 curl $VAULT_ADDR/v1/secrets/nbsadapter/local -H "X-Vault-Token: nj101" -X GET
 
