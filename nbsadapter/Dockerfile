@@ -19,5 +19,5 @@ FROM openjdk:11-jre-slim
 ##COPY --from=build_gradle /home/app/build/libs/nbsadapter.jar /tmp
 COPY --from=build_maven /home/app/target/nbsadapter-1.0.1.jar /tmp/nbsadapter1.jar
 ENTRYPOINT ["java", "-cp", "/tmp/nbsadapter1.jar", \
-        "-Dspring.profiles.active=development", \
+        "-Dspring.profiles.active=local", \
         "org.springframework.boot.loader.JarLauncher"]
