@@ -51,17 +51,6 @@ services:
     networks:
       - services_network
 
-  vault-init-1:
-    image: vault:latest
-    depends_on:
-      - vault
-    environment:
-      VAULT_ADDR: 'http://vault:8200'
-      VAULT_TOKEN: 'nj101'
-    command: secrets enable -version=1 -path secrets kv
-    networks:
-      - services_network
-
 volumes:
   mongodb_data_container:
 
