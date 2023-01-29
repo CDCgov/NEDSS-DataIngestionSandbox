@@ -1,9 +1,5 @@
 #!/bin/ksh
 
-echo "Setting up kafka topics"
-/opt/homebrew/opt/kafka/bin/kafka-topics --create --bootstrap-server localhost:29092 --replication-factor 1 --partitions 1 --topic hl7-msgs-topic
-/opt/homebrew/opt/kafka/bin/kafka-topics --create --bootstrap-server localhost:29092 --replication-factor 1 --partitions 1 --topic xml-msgs-topic
-
 echo "Setting up vault"
 VAULT_ADDR=http://localhost:8200
 VAULT_TOKEN=nj101

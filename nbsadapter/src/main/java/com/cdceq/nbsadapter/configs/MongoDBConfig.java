@@ -26,7 +26,6 @@ import	com.vault.utils.VaultValuesResolver;
 public class MongoDBConfig extends AbstractMongoClientConfiguration {
     private static Logger logger = LoggerFactory.getLogger(MongoDBConfig.class);
 
-    //mongodb://admin:password@localhost:27017/db
     //private static String conntStrFormat = "mongodb://%s:%s@%s:%s/%s";
     private static String conntStrFormat = "mongodb://%s:%s/%s";
 

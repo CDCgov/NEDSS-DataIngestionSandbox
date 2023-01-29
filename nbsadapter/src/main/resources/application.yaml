@@ -39,9 +39,9 @@ kafka:
 
 hashivault:
   enabled: true
-  authendpoint:    http://localhost:8200/v1/auth/cert/login
-  secretsendpoint: http://localhost:8200/v1/secrets/${spring.application.name}/${spring.profiles.active}
-  encryptendpoint: http://localhost:8200/v1/transit/encrypt/msg-key
+  authendpoint:    http://vault:8200/v1/auth/cert/login
+  secretsendpoint: http://vault:8200/v1/secrets/${spring.application.name}/${spring.profiles.active}
+  encryptendpoint: http://vault:8200/v1/transit/encrypt/msg-key
     
 thread-pooling:
   core-pool-size: 25

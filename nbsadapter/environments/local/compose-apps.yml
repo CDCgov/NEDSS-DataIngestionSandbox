@@ -1,0 +1,15 @@
+version: '3.7'
+services:
+  nbsadapter:
+    image: nbsadapter
+    ports:
+      - 8080:8080
+    networks:
+      - apps_network
+
+networks:
+  apps_network:
+      external:
+        name: adapter_network
+
+
