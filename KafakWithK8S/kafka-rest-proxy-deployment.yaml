@@ -5,7 +5,7 @@ metadata:
   labels:
     service: rest-proxy
 spec: 
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       service: rest-proxy
@@ -30,5 +30,3 @@ spec:
               value: "kafka:29092"
             - name: KAFKA_REST_LISTENERS
               value: "http://0.0.0.0:30082"
-            - name: KAFKA_REST_SCHEMA_REGISTRY_URL
-              value: "http://schema-registry:30081"

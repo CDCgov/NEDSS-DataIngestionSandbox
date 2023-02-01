@@ -106,31 +106,31 @@ services:
       KAFKA_REST_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
 
   # Consumer Demo
-  spring-comsumer-demo:
-    # image: spring-comsumer-demo
-    build:
-      context: .
-      dockerfile: demo_consumer.Dockerfile
-    container_name: spring-comsumer-demo
-    depends_on:
-      - broker
-    ports:
-      - "9001:9001"
-    environment:
-      SPRING_DATA_MONGODB_URI: 'mongodb://host.docker.internal:27017'
-      SPRING_DATASOURCE_URL: 'jdbc:postgresql://host.docker.internal:5432/test-consumer'
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: 'broker:29092'
+  # spring-comsumer-demo:
+  #   # image: spring-comsumer-demo
+  #   build:
+  #     context: .
+  #     dockerfile: demo_consumer.Dockerfile
+  #   container_name: spring-comsumer-demo
+  #   depends_on:
+  #     - broker
+  #   ports:
+  #     - "9001:9001"
+  #   environment:
+  #     SPRING_DATA_MONGODB_URI: 'mongodb://host.docker.internal:27017'
+  #     SPRING_DATASOURCE_URL: 'jdbc:postgresql://host.docker.internal:5432/test-consumer'
+  #     SPRING_KAFKA_BOOTSTRAP_SERVERS: 'broker:29092'
 
   # Connector Demo
-  kafka-connector-demo:
-    # image: kafka-connector-demo-app
-    build:
-      context: .
-      dockerfile: demo_connector.Dockerfile
-    container_name: kafka-connector-demo
-    depends_on:
-      - broker
-    ports:
-      - "8102:8102"
-    environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://host.docker.internal:27017
+  # kafka-connector-demo:
+  #   # image: kafka-connector-demo-app
+  #   build:
+  #     context: .
+  #     dockerfile: demo_connector.Dockerfile
+  #   container_name: kafka-connector-demo
+  #   depends_on:
+  #     - broker
+  #   ports:
+  #     - "8102:8102"
+  #   environment:
+  #     - SPRING_DATA_MONGODB_URI=mongodb://host.docker.internal:27017
