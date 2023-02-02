@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   nbsadapter:
-    image: raddanki64/eqartifacts:nbsadapter
+    image: nbsadapter
     ports:
       - "8080:8080"
     networks:

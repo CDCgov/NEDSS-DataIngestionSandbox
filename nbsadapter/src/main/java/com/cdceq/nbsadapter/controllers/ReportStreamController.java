@@ -67,21 +67,30 @@ public class ReportStreamController {
     public ResponseEntity<ElrDataPostResponse> processElrData(
                                 /* @RequestHeader("AuthToken") String authToken, */
                                 @RequestBody String xmlPayload) throws Exception {
+        return processXmlData(xmlPayload);
+    }
+
+    @PostMapping(path = "nbsadapter/v1/xml")
+    @ApiOperation(value = "Post Xml data")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = String.class)})
+    public ResponseEntity<ElrDataPostResponse> processXmlData(
+            /* @RequestHeader("AuthToken") String authToken, */
+            @RequestBody String xmlPayload) throws Exception {
     	/*
     	if( !isTokenValid(authToken) ) {
     		throw new Exception("Invalid auth token, please check AuthToken header value!");
     	}
     	*/
-    	
-    	System.out.println("xmlPayload: " + xmlPayload);
+
+        System.out.println("xmlPayload: " + xmlPayload);
 
         exchange.getIn().setBody(xmlPayload);
         xmlProducerTemplate.send(exchange);
-    	
-    	ElrDataPostResponse edpr = new ElrDataPostResponse();
-    	edpr.setExecutionNotes("Saved data to the store");
-    	
-    	logger.info("Processed elr post request");
+
+        ElrDataPostResponse edpr = new ElrDataPostResponse();
+        edpr.setExecutionNotes("Saved data to the store");
+
+        logger.info("Processed elr post request");
         return new ResponseEntity<>(edpr, HttpStatus.OK);
     }
 
