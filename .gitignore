@@ -1,6 +1,8 @@
 # Compiled class file
 *.class
 
+nbsadapter/certificates/
+
 nbsadapter/target/
 nbsadapter/build/
 nbsadapter/.idea/

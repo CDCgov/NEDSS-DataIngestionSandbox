@@ -8,6 +8,9 @@ export VAULT_ADDR VAULT_TOKEN
 curl $VAULT_ADDR/v1/secrets/nbsadapter/local -d @nbsadapter.local.json -H "X-Vault-Token: nj101" -X POST
 curl $VAULT_ADDR/v1/secrets/nbsadapter/local -H "X-Vault-Token: nj101" -X GET
 
+curl $VAULT_ADDR/v1/secrets/phinadapter/local -d @phinadapter.local.json -H "X-Vault-Token: nj101" -X POST
+curl $VAULT_ADDR/v1/secrets/phinadapter/local -H "X-Vault-Token: nj101" -X GET
+
 if [ ! -d "/tmp/hl7files" ] 
 then
     mkdir /tmp/hl7files
