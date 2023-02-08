@@ -9,6 +9,13 @@ services:
     volumes:
       - /tmp/hl7files:/tmp/hl7files
 
+  phinadapter:
+    image: raddanki64/eqawsartifacts:phinadapter
+    ports:
+      - "8090:8090"
+    networks:
+      - apps_network
+
 networks:
   apps_network:
       external:
