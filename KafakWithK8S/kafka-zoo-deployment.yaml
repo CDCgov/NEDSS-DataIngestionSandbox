@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       labels:
-        network/kafka-network: "true"
+        # network/kafka-network: "true"
         service: zookeeper
     spec:
       containers:

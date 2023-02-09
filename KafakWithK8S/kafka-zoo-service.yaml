@@ -11,11 +11,22 @@ metadata:
 #       targetPort: 2181
 #   selector:
 #     service: zookeeper
+
+
+# spec:
+#   type: ClusterIP
+#   selector:
+#     service: zookeeper
+#   ports:
+#     - name: "2181"
+#       port: 2181
+#       targetPort: 2181
+
+
 spec:
-  type: ClusterIP
+  ports:
+  - name: client
+    port: 2181
+    protocol: TCP
   selector:
     service: zookeeper
-  ports:
-    - name: "2181"
-      port: 2181
-      targetPort: 2181
