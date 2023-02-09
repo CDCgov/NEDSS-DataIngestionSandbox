@@ -4,7 +4,20 @@ metadata:
   labels:
     service: kafka
   name: kafka
+# spec:
+#   selector:
+#     service: kafka
+#   ports:
+#     - name: internal
+#       port: 29092
+#       targetPort: 29092
+#     - name: external
+#       port: 30092
+#       targetPort: 9092
+#       nodePort: 30192
+#   type: NodePort
 spec:
+  type: ClusterIP
   selector:
     service: kafka
   ports:
@@ -13,6 +26,4 @@ spec:
       targetPort: 29092
     - name: external
       port: 30092
-      targetPort: 9092
-      nodePort: 30192
-  type: NodePort
+      targetPort: 992
