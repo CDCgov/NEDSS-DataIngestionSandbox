@@ -13,3 +13,7 @@ nodeGroups:
     desiredCapacity: 3
     ssh: # ec2 key
       publicKeyName: eks-sandbox
+
+
+# get existing cluster
+#  aws eks update-kubeconfig --name <clsuter namne> --region <region>
