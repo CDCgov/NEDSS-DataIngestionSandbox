@@ -20,9 +20,9 @@ spec:
       enableServiceLinks: false
       containers:
       - name: kafka
-        volumeMounts:
-          - mountPath: /app/folder
-            name: kafka-broker-data
+        # volumeMounts:
+        #   - mountPath: /app/folder
+        #     name: kafka-broker-data
         imagePullPolicy: IfNotPresent
         image: confluentinc/cp-kafka:7.3.0
         ports:
@@ -34,7 +34,9 @@ spec:
           - name: KAFKA_LISTENERS
             value: "INTERNAL://kafka:29092,EXTERNAL://kafka:9092"
           - name: KAFKA_ADVERTISED_LISTENERS
-            value: "INTERNAL://kafka:29092,EXTERNAL://localhost:9092"
+          # EXTERNAL ADDRESS NEED TO BE Load balancer address
+          # https://jinnabalu.medium.com/kafka-cluster-on-amezon-eks-cluster-5850d67ae723
+            value: "INTERNAL://kafka:29092,EXTERNAL://a40d54f0b48ef47d4833903984e12eab-436094074.us-west-1.elb.amazonaws.com:9092"
           - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
             value: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
           - name: KAFKA_INTER_BROKER_LISTENER_NAME
@@ -51,7 +53,7 @@ spec:
             value: "1"
       hostname: kafka
       restartPolicy: Always
-      volumes:
-      - name: kafka-broker-data
-        persistentVolumeClaim:
-          claimName: kafka-broker-pvc
+      # volumes:
+      # - name: kafka-broker-data
+      #   persistentVolumeClaim:
+      #     claimName: kafka-broker-pvc
