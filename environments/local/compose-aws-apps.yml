@@ -16,6 +16,13 @@ services:
     networks:
       - apps_network
 
+  jwtgenerator:
+    image: raddanki64/eqawsartifacts:jwtgenerator
+    ports:
+      - "8000:8000"
+    networks:
+      - apps_network
+
 networks:
   apps_network:
       external:
