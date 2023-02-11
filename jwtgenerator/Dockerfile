@@ -17,8 +17,8 @@ RUN mvn -f /home/app/pom.xml clean package
 ##RUN gradle --no-daemon build
 
 FROM openjdk:11-jre-slim
-##COPY --from=build_gradle /home/app/build/libs/phinadapter.jar /tmp
-COPY --from=build_maven /home/app/target/phinadapter-1.0.1.jar /tmp/phinadapter1.jar
-ENTRYPOINT ["java", "-cp", "/tmp/phinadapter1.jar", \
+##COPY --from=build_gradle /home/app/build/libs/jwtgenerator.jar /tmp
+COPY --from=build_maven /home/app/target/jwtgenerator-1.0.1.jar /tmp/jwtgenerator.jar
+ENTRYPOINT ["java", "-cp", "/tmp/jwtgenerator.jar", \
         "-Dspring.profiles.active=local", \
         "org.springframework.boot.loader.JarLauncher"]

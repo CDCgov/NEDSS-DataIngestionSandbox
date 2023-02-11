@@ -7,9 +7,20 @@ nbsadapter/target/
 nbsadapter/build/
 nbsadapter/.idea/
 nbsadapter/.gradle/
-nbsadapter/environments/*/*.json
+
+phinadapter/target/
+phinadapter/build/
+phinadapter/.idea/
+phinadapter/.gradle/
+
+jwtgenerator/target/
+jwtgenerator/build/
+jwtgenerator/.idea/
+jwtgenerator/.gradle/
 
 ramesh/
+
+environments/*/*.json
 
 # Log file
 *.log

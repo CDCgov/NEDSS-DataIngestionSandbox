@@ -16,7 +16,7 @@ import	com.cdceq.nbsadapter.processors.Hl7ToXmlTransformer;
 import	com.cdceq.nbsadapter.processors.XmlDataPersister;
 import 	com.cdceq.nbsadapter.processors.Hl7DataPersister;
 
-import	com.vault.utils.VaultValuesResolver;;
+import	com.vault.utils.VaultValuesResolver;
 
 @Component
 @NoArgsConstructor
