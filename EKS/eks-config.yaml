@@ -19,6 +19,7 @@ nodeGroups:
 
 # get existing cluster
 #  aws eks update-kubeconfig --name <clsuter namne> --region <region>
+# aws eks update-kubeconfig --name EKS-DI-SandBox --region us-west-1
 
 
 # delete eks
