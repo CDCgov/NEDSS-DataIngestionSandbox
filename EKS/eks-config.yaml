@@ -10,10 +10,16 @@ metadata:
 nodeGroups:
   - name: ng-1
     instanceType: t2.small
-    desiredCapacity: 3
+    desiredCapacity: 1
     ssh: # ec2 key
       publicKeyName: eks-sandbox
 
+# create eks
+# eksctl create cluster -f eks-config.yaml
 
 # get existing cluster
 #  aws eks update-kubeconfig --name <clsuter namne> --region <region>
+
+
+# delete eks
+# eksctl delete cluster -f eks-config.yaml 
