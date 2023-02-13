@@ -42,13 +42,18 @@ public class JwtController {
     private String jwtSeed;
 
     private StandardPBEStringEncryptor decryptor = new StandardPBEStringEncryptor();
+    private boolean bInitialized = false;
 
     @Inject
     public JwtController() {
     }
 
     private void init() {
-        jwtSeed = VaultValuesResolver.getVaultKeyValue(jwtSeed);
+        if( !bInitialized ) {
+            jwtSeed = VaultValuesResolver.getVaultKeyValue(jwtSeed);
+            decryptor.setPassword(jwtSeed);
+            bInitialized = true;
+        }
     }
 
     @GetMapping(path = "jwt/v1/token")
@@ -85,9 +90,6 @@ public class JwtController {
         }
 
         if((null != appHostAddress) && (appHostAddress.length() > 0)) {
-
-
-            decryptor.setPassword(jwtSeed);
             remoteAddr = decryptor.decrypt(appHostAddress);
         }
 

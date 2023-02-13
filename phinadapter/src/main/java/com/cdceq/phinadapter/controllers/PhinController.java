@@ -55,16 +55,20 @@ public class PhinController {
 
     private boolean bJwtEnabled;
     private StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+    private boolean bInitialized = false;
 
     @Inject
     public PhinController() {
     }
 
     private void init() {
-        bJwtEnabled = Boolean.valueOf(VaultValuesResolver.getVaultKeyValue(jwtEnabled));
-        validationEndpoint = VaultValuesResolver.getVaultKeyValue(validationEndpoint);
-        seed = VaultValuesResolver.getVaultKeyValue(seed);
-        encryptor.setPassword(seed);
+        if( !bInitialized ) {
+            bJwtEnabled = Boolean.valueOf(VaultValuesResolver.getVaultKeyValue(jwtEnabled));
+            validationEndpoint = VaultValuesResolver.getVaultKeyValue(validationEndpoint);
+            seed = VaultValuesResolver.getVaultKeyValue(seed);
+            encryptor.setPassword(seed);
+            bInitialized = true;
+        }
     }
 
     @PostMapping(path = "phinadapter/v1/elrwqactivator")
@@ -73,16 +77,20 @@ public class PhinController {
     public ResponseEntity<ElrWorkerThreadUpdatePostResponse> processRequest(
             @RequestHeader("APP-TOKEN") String authToken,
             @RequestBody String payload) throws Exception {
+        ElrWorkerThreadUpdatePostResponse edpr = new ElrWorkerThreadUpdatePostResponse();
+
         init();
 
         if( bJwtEnabled && !isTokenValid(authToken) ) {
-    		throw new Exception("Invalid token, please check APP-TOKEN header value!");
+            String msg = "Invalid token, please check APP-TOKEN header value and ensure token is valid!";
+            edpr.setExecutionNotes(msg);
+    		logger.warn(msg);
+            return new ResponseEntity<>(edpr, HttpStatus.BAD_REQUEST);
     	}
 
         logger.info("Processing nbs odse request for payload = {}", payload);
         int recordId = serviceProvider.processMessage(payload);
 
-        ElrWorkerThreadUpdatePostResponse edpr = new ElrWorkerThreadUpdatePostResponse();
         edpr.setExecutionNotes("Updated row with recordId = " + recordId);
 
         logger.info("Processed nbs odse elrworkerthread table update request for recordId = {}", recordId);
