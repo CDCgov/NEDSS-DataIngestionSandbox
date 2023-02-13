@@ -18,9 +18,17 @@ nodeGroups:
 # eksctl create cluster -f eks-config.yaml
 
 # get existing cluster
-#  aws eks update-kubeconfig --name <clsuter namne> --region <region>
+# aws eks update-kubeconfig --name <clsuter namne> --region <region>
 # aws eks update-kubeconfig --name EKS-DI-SandBox --region us-west-1
 
 
 # delete eks
 # eksctl delete cluster -f eks-config.yaml 
+
+
+# apply context
+# kubectl apply -f <dir or yaml file>
+
+
+# add user to eks console on aws
+# https://stackoverflow.com/questions/70787520/your-current-user-or-role-does-not-have-access-to-kubernetes-objects-on-this-eks
