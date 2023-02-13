@@ -32,7 +32,12 @@ hashivault:
   enabled: true
   authendpoint:    http://vault:8200/v1/auth/cert/login
   secretsendpoint: http://vault:8200/v1/secrets/${spring.application.name}/${spring.profiles.active}
-    
+
+jwt:
+  enabled: vault_jwt_enabled
+  endpoint: vault_jwt_endpoint
+  seed: vault_jwt_seed
+
 thread-pooling:
   core-pool-size: 25
   max-pool-size: 300

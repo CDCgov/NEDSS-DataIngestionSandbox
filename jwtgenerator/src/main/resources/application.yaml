@@ -26,6 +26,7 @@ jwt:
   claim-name: vault_jwt_claim_name
   claim-email: vault_jwt_claim_email
   claim-subject: vault_jwt_claim_subject
+  seed: vault_jwt_seed
 
 thread-pooling:
   core-pool-size: 25

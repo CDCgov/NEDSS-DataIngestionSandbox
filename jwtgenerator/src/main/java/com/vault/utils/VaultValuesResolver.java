@@ -122,7 +122,7 @@ public class VaultValuesResolver {
         String returnedClientToken = getClientToken();
 
         try {
-        	logger.info("Will obtain secrets, url = {}", secretsendpoint);
+        	logger.info("Will obtain secrets from vault, url = {}", secretsendpoint);
 
             HttpGet secretsRequest = new HttpGet(secretsendpoint);
             secretsRequest.addHeader(PROPERTY_HASHI_VAULT_AUTH_HEADER, PROPERTY_HASHI_VAULT_SECRETS_NAMESPACE);
@@ -130,13 +130,12 @@ public class VaultValuesResolver {
 
             HttpResponse response = httpClientForSecrets.execute(secretsRequest);
             String resString = processResponse(response);
-            logger.info("!!! resString = {}", resString);
             
             srh = gson.fromJson(resString, SecretsReplyHolder.class);
             
-            logger.info("Processed hashi corp reply for secrets");
+            logger.info("Processed vault reply for secrets");
         } catch (Exception e) {
-        	logger.error("Hashi vault store error while getting secrets, will retry later, url = {}", secretsendpoint, e);
+        	logger.error("Vault store error while getting secrets, will retry later, url = {}", secretsendpoint, e);
             throw e;
         }
 
@@ -148,7 +147,7 @@ public class VaultValuesResolver {
 
         String statusMsg = response.getStatusLine().getReasonPhrase();
         if (statusCode != 200) {
-            String msg = String.format("HashiCorp vault returned non 200 http status during auth, statusCode = %d, statusMsg = %s",
+            String msg = String.format("Vault returned non 200 http status during auth, statusCode = %d, statusMsg = %s",
                                 statusCode,
                                 statusMsg);
             throw new Exception(msg);

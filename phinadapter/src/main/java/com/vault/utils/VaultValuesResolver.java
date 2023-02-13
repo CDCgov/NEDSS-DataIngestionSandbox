@@ -82,8 +82,49 @@ public class VaultValuesResolver {
 		
 		return retValue;
 	}
-	
-	public VaultValuesResolver() {
+
+    public static CloseableHttpClient initNonSslClient() throws Exception {
+        CloseableHttpClient httpClient = null;
+
+        try {
+            httpClient = HttpClients.createDefault();
+            logger.info("Initialized non-ssl client to interface with HashiCorp vault");
+            return httpClient;
+        }
+        catch (Exception e) {
+            logger.error("Non-ssl client initialization error", e);
+            throw e;
+        }
+    }
+
+    public static String processResponse(HttpResponse response, String serviceTag) throws Exception {
+        int statusCode = response.getStatusLine().getStatusCode();
+
+        String statusMsg = response.getStatusLine().getReasonPhrase();
+        if (statusCode != 200) {
+            String msg = String.format("%s service returned non 200 http status during auth, statusCode = %d, statusMsg = %s",
+                    serviceTag,
+                    statusCode,
+                    statusMsg);
+            throw new Exception(msg);
+        }
+
+        HttpEntity entity = response.getEntity();
+        InputStream is = entity.getContent();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "iso-8859-1"), 8);
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line + "\n");
+        }
+
+        String resString = sb.toString();
+        is.close();
+
+        return resString;
+    }
+
+    public VaultValuesResolver() {
 		instance = this;
 	}
 
@@ -122,52 +163,25 @@ public class VaultValuesResolver {
         String returnedClientToken = getClientToken();
 
         try {
-        	logger.info("Will obtain secrets, url = {}", secretsendpoint);
+        	logger.info("Will obtain secrets from vault, url = {}", secretsendpoint);
 
             HttpGet secretsRequest = new HttpGet(secretsendpoint);
             secretsRequest.addHeader(PROPERTY_HASHI_VAULT_AUTH_HEADER, PROPERTY_HASHI_VAULT_SECRETS_NAMESPACE);
             secretsRequest.addHeader(PROPERTY_HASHI_VAULT_TOKEN_HEADER, returnedClientToken);
 
             HttpResponse response = httpClientForSecrets.execute(secretsRequest);
-            String resString = processResponse(response);
-            logger.info("!!! resString = {}", resString);
+            String resString = processResponse(response, "Vault service");
             
             srh = gson.fromJson(resString, SecretsReplyHolder.class);
             
-            logger.info("Processed hashi corp reply for secrets");
+            logger.info("Processed reply from vault for secrets");
         } catch (Exception e) {
-        	logger.error("Hashi vault store error while getting secrets, will retry later, url = {}", secretsendpoint, e);
+        	logger.error("Vault store error while getting secrets, will retry later, url = {}", secretsendpoint, e);
             throw e;
         }
 
         return srh.data.data;
     }
-    
-    private String processResponse(HttpResponse response) throws Exception {
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        String statusMsg = response.getStatusLine().getReasonPhrase();
-        if (statusCode != 200) {
-            String msg = String.format("HashiCorp vault returned non 200 http status during auth, statusCode = %d, statusMsg = %s",
-                                statusCode,
-                                statusMsg);
-            throw new Exception(msg);
-        }
-
-        HttpEntity entity = response.getEntity();
-        InputStream is = entity.getContent();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "iso-8859-1"), 8);
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line + "\n");
-        }
-
-        String resString = sb.toString();
-        is.close();
-
-        return resString;
-    }    
     
 	private String getFixedClientToken() throws Exception {
 		return "nj101";
@@ -206,7 +220,7 @@ public class VaultValuesResolver {
             httpAuthRequest.addHeader(PROPERTY_HASHI_VAULT_AUTH_HEADER, PROPERTY_HASHI_VAULT_AUTH_NAMESPACE);
 
             HttpResponse response = httpClientForSecrets.execute(httpAuthRequest);
-            String resString = processResponse(response);
+            String resString = processResponse(response, "Vault service");
             arh = gson.fromJson(resString, AuthReplyHolder.class);
         } catch (Exception e) {
 			logger.error("Hashi vault error during signon", e);
@@ -248,20 +262,6 @@ public class VaultValuesResolver {
 			throw new Exception(e);
 		}
 	}
-	
-	private CloseableHttpClient initNonSslClient() throws Exception {
-        CloseableHttpClient httpClient = null;
-
-        try {
-            httpClient = HttpClients.createDefault();
-            logger.info("Initialized non-ssl client to interface with HashiCorp vault");
-            return httpClient;
-        }
-        catch (Exception e) {
-        	logger.error("Non-ssl client initialization error", e);
-            throw e;
-        }
-    }
 
     private HashMap<String, String> getDefaulSecrets() {
         HashMap<String, String> localSecrets = new HashMap<String, String>();

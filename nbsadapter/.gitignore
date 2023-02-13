@@ -1,21 +1,10 @@
 # Compiled class file
 *.class
 
-nbsadapter/certificates/
-
-nbsadapter/target/
-nbsadapter/build/
-nbsadapter/.idea/
-nbsadapter/.gradle/
-
-jwtgenerator/target/
-jwtgenerator/build/
-jwtgenerator/.idea/
-jwtgenerator/.gradle/
-
-ramesh/
-
-environments/*/*.json
+target/
+build/
+.idea/
+.gradle/
 
 # Log file
 *.log
@@ -34,6 +23,8 @@ environments/*/*.json
 *.zip
 *.tar.gz
 *.rar
+
+*.swp
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*

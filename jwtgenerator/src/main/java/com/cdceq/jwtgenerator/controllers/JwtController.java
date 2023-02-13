@@ -1,6 +1,7 @@
 package com.cdceq.jwtgenerator.controllers;
 
 import  com.cdceq.jwtgenerator.services.TokenGenerator;
+import  com.vault.utils.VaultValuesResolver;
 
 import  io.swagger.annotations.Api;
 import  io.swagger.annotations.ApiOperation;
@@ -12,13 +13,14 @@ import 	org.springframework.http.MediaType;
 import  org.springframework.http.ResponseEntity;
 import  org.springframework.web.bind.annotation.GetMapping;
 import  org.springframework.web.bind.annotation.RestController;
-import 	org.springframework.web.bind.annotation.RequestBody;
 import 	org.springframework.web.bind.annotation.RequestHeader;
 import 	org.springframework.beans.factory.annotation.Autowired;
+import  org.springframework.beans.factory.annotation.Value;
 
 import  javax.servlet.http.HttpServletRequest;
 
 import  org.json.JSONObject;
+import  org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 
 import  javax.inject.Inject;
 
@@ -36,8 +38,17 @@ public class JwtController {
     @Autowired
     private TokenGenerator tokenGenerator;
 
+    @Value("${jwt.seed}")
+    private String jwtSeed;
+
+    private StandardPBEStringEncryptor decryptor = new StandardPBEStringEncryptor();
+
     @Inject
     public JwtController() {
+    }
+
+    private void init() {
+        jwtSeed = VaultValuesResolver.getVaultKeyValue(jwtSeed);
     }
 
     @GetMapping(path = "jwt/v1/token")
@@ -63,13 +74,23 @@ public class JwtController {
     @ApiOperation(value = "Validate provided token")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = String.class)})
     public ResponseEntity<String> verifyToken(
-            @RequestHeader(value="APP-TOKEN") String appToken) throws Exception {
+            @RequestHeader(value="APP-TOKEN") String appToken,
+            @RequestHeader(value="APP-HOST-ADDRESS") String appHostAddress) throws Exception {
+        init();
+        String remoteAddr = request.getRemoteAddr();;
+
         if((null == appToken) || (appToken.length() <= 0)) {
             logger.info("Invalid token, rejecting request");
             return new ResponseEntity<>("Missing http header APP-TOKEN", HttpStatus.BAD_REQUEST);
         }
 
-        String remoteAddr = request.getRemoteAddr();
+        if((null != appHostAddress) && (appHostAddress.length() > 0)) {
+
+
+            decryptor.setPassword(jwtSeed);
+            remoteAddr = decryptor.decrypt(appHostAddress);
+        }
+
         boolean isValid = tokenGenerator.verifyToken(appToken, remoteAddr);
 
         JSONObject reply = new JSONObject();
