@@ -3,6 +3,7 @@ package com.cdceq.phinadapter.controllers;
 import	com.cdceq.phinadapter.api.model.ElrWorkerThreadUpdatePostResponse;
 import  com.cdceq.phinadapter.services.NbsOdseServiceProvider;
 
+import com.sun.org.apache.xpath.internal.operations.String;
 import  com.vault.utils.VaultValuesResolver;
 
 import  io.swagger.annotations.Api;
@@ -78,6 +79,7 @@ public class PhinController {
             @RequestHeader("APP-TOKEN") String authToken,
             @RequestBody String payload) throws Exception {
         ElrWorkerThreadUpdatePostResponse edpr = new ElrWorkerThreadUpdatePostResponse();
+        StringBuffer sb = new StringBuffer();
 
         init();
 
@@ -89,7 +91,7 @@ public class PhinController {
     	}
 
         logger.info("Processing nbs odse request for payload = {}", payload);
-        int recordId = serviceProvider.processMessage(payload);
+        int recordId = serviceProvider.processMessage(payload, sb);
 
         edpr.setExecutionNotes("Updated row with recordId = " + recordId);
 

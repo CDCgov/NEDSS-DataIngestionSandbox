@@ -24,10 +24,20 @@ public class NbsOdseServiceProvider {
     @Autowired
     private NbsOdseRepository nbsOdseRepo;
     
-    public int processMessage(String payload) {
+    public int processMessage(String payload, StringBuffer sb) {
 		int recordId = -1;
-		ElrWorkerThreadUpdateRequestHolder request = gson.fromJson(payload, ElrWorkerThreadUpdateRequestHolder.class);
-		String strRecordId = request.recordId;
+		ElrWorkerThreadUpdateRequestHolder request = null;
+
+
+		try {
+			ElrWorkerThreadUpdateRequestHolder request = gson.fromJson(payload, ElrWorkerThreadUpdateRequestHolder.class);
+		}
+		catch(Exception e) {
+			sb.append("Failed to parse payload, please check body");
+			return recordId;
+		}
+
+			String strRecordId = request.recordId;
 
 
 		logger.info("strRecordId = {}", strRecordId);
