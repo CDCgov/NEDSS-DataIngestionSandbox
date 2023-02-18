@@ -66,6 +66,8 @@ public class JwtController {
             return new ResponseEntity<>("Missing http header APP-PASSPHRASE", HttpStatus.BAD_REQUEST);
         }
 
+        init();
+
         String remoteAddr = request.getRemoteAddr();
         String token = tokenGenerator.generateToken(appPassPhrase, remoteAddr);
 
@@ -81,13 +83,13 @@ public class JwtController {
     public ResponseEntity<String> verifyToken(
             @RequestHeader(value="APP-TOKEN") String appToken,
             @RequestHeader(value="APP-HOST-ADDRESS") String appHostAddress) throws Exception {
-        init();
-        String remoteAddr = request.getRemoteAddr();;
-
         if((null == appToken) || (appToken.length() <= 0)) {
             logger.info("Invalid token, rejecting request");
             return new ResponseEntity<>("Missing http header APP-TOKEN", HttpStatus.BAD_REQUEST);
         }
+
+        init();
+        String remoteAddr = request.getRemoteAddr();;
 
         if((null != appHostAddress) && (appHostAddress.length() > 0)) {
             remoteAddr = decryptor.decrypt(appHostAddress);

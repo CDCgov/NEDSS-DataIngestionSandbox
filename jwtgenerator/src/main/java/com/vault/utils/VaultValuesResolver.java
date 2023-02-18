@@ -71,7 +71,7 @@ public class VaultValuesResolver {
 	{
 		String retValue = vaultLookupKey;
 		
-		if(null == instance) return retValue;
+		if((null == instance) || (knownSecrets == null)) return retValue;
 		
 		if((null != vaultLookupKey) 
 			&& (vaultLookupKey.length() > 0)
@@ -264,6 +264,13 @@ public class VaultValuesResolver {
 
     private HashMap<String, String> getDefaulSecrets() {
         HashMap<String, String> localSecrets = new HashMap<String, String>();
+
+        localSecrets.put("jwt_secret_for_algorithm", "grass is greener on the other side!");
+        localSecrets.put("jwt_claim_name", "Enquizit Inc");
+        localSecrets.put("jwt_claim_email", "nbsmoderization@enquizit.com");
+        localSecrets.put("jwt_claim_subject", "NBS Mederization");
+        localSecrets.put("jwt_seed", "monroe");
+
         return localSecrets;
     }
 }
