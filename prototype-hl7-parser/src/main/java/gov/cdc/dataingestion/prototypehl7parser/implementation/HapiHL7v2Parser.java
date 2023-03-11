@@ -27,7 +27,7 @@ public class HapiHL7v2Parser {
         this.context = new DefaultHapiContext();
     }
 
-    public HL7v2Payload ParsingHL7v2ToObject(HL7v2Payload hl7v2Payload) throws HL7Exception {
+    public HL7v2Payload ParsingPayloadToHL7v2(HL7v2Payload hl7v2Payload) throws HL7Exception {
 
         if(hl7v2Payload.getHl7v2Version().equals(SupportedHL7v2Version)) {
 
