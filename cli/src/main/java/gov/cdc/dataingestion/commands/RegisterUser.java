@@ -14,7 +14,7 @@ import java.io.Console;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "register", mixinStandardHelpOptions = true, description = "Client will be onboarded providing username and secret.")
-public class RegisterUser implements Callable<String> {
+public class RegisterUser implements Runnable {
 
     @CommandLine.Option(names = {"--username"}, required = true, description = "Username provided by the client.")
     String username;
@@ -24,9 +24,9 @@ public class RegisterUser implements Callable<String> {
 
 
     @Override
-    public String call() {
+    public void run() {
         Console console = System.console();
-        String result = "Created?";
+        String result = "";
         if (password == null && console != null) {
             password = console.readPassword("Enter the secret provided by the client (CASE-SENSITIVE):");
         }
@@ -55,18 +55,29 @@ public class RegisterUser implements Callable<String> {
 
             CloseableHttpResponse response = httpsClient.execute(postRequest);
 
-            System.out.println("Response status code..." + response.getStatusLine());
+//            System.out.println("Response status codeeee..." + response.getStatusLine().getStatusCode());
 
-            HttpEntity entity = response.getEntity();
-            if (entity != null) {
-                // return it as a String
-                result = EntityUtils.toString(entity);
-                System.out.println(result);
+            if(response.getStatusLine().getStatusCode() == 200) {
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    if(EntityUtils.toString(entity).contains("created")) {
+                        result = "User onboarded successfully";
+                    }
+                    else {
+                        result = "Something went wrong. Please check the logs";
+                    }
+                }
+            }
+            else if(response.getStatusLine().getStatusCode() == 401) {
+                result = "Unauthorized. Admin username/password is incorrect.";
+            }
+            else {
+                result = "Something went wrong on the server side. Please check the logs.";
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return result;
+        System.out.println(result);
     }
 }

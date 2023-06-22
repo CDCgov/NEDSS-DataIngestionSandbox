@@ -14,10 +14,10 @@ import java.io.Console;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "token", mixinStandardHelpOptions = true, description = "Generates a JWT token.")
-public class TokenGenerator implements Callable<String> {
+public class TokenGenerator implements Runnable {
 
     @Override
-    public String call() {
+    public void run() {
         Console console = System.console();
         String result = "";
         System.out.println("Connecting to NBS Data Ingestion Service...");
@@ -45,18 +45,24 @@ public class TokenGenerator implements Callable<String> {
 
             CloseableHttpResponse response = httpsClient.execute(postRequest);
 
-            System.out.println("Response status code..." + response.getStatusLine());
+//            System.out.println("Response status codeeee..." + response.getStatusLine().getStatusCode());
 
-            HttpEntity entity = response.getEntity();
-            if (entity != null) {
-                // return it as a String
-                result = EntityUtils.toString(entity);
-                System.out.println(result);
+            if(response.getStatusLine().getStatusCode() == 200) {
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    result = EntityUtils.toString(entity);
+                }
+            }
+            else if(response.getStatusLine().getStatusCode() == 401) {
+                result = "Unauthorized. Admin username/password is incorrect.";
+            }
+            else {
+                result = "Something went wrong on the server side. Please check the logs.";
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return result;
+        System.out.println(result);
     }
 }
