@@ -30,3 +30,11 @@ hs_err_pid*
 
 environments_notUsed/*
 
+# IntelliJ IDEA
+.idea/
+
+# Build
+build/
+.gradle/
+
+.DS_Store
