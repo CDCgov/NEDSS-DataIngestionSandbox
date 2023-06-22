@@ -1,5 +1,6 @@
 package gov.cdc.dataingestion.commands;
 
+import gov.cdc.dataingestion.util.AuthUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,54 +31,15 @@ public class RegisterUser implements Runnable {
         if (password == null && console != null) {
             password = console.readPassword("Enter the secret provided by the client (CASE-SENSITIVE):");
         }
+        String serviceEndpoint = "https://dataingestion.datateam-cdc-nbs.eqsandbox.com/registration?username="
+                + username + "&password=" + new String(password);
         System.out.println("Connecting to NBS Data Ingestion Service...");
-        try {
-            String adminUser = console.readLine("Enter admin username: ");
-            char[] adminPassword = console.readPassword("Enter admin password: ");
-
-//            final String auth = adminUser + ":" + new String(adminPassword);
-//            final byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
-//            final String authHeader = "Basic " + new String(encodedAuth);
-
-            UsernamePasswordCredentials creds = new UsernamePasswordCredentials(adminUser, new String(adminPassword));
-
-//            CloseableHttpClient httpsClient = HttpClientBuilder.create()
-//                    .setDefaultCredentialsProvider(provider)
-//                    .build();
-            CloseableHttpClient httpsClient = HttpClients.createDefault();
-
-            System.out.println("Password is printing..." + new String(password));
-
-            HttpPost postRequest = new HttpPost("https://dataingestion.datateam-cdc-nbs.eqsandbox.com/registration?username="+ username +"&password="+new String(password));
-            postRequest.addHeader("accept", "*/*");
-            postRequest.addHeader(BasicScheme.authenticate(creds, "US-ASCII", false));
-//            postRequest.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
-
-            CloseableHttpResponse response = httpsClient.execute(postRequest);
-
-//            System.out.println("Response status codeeee..." + response.getStatusLine().getStatusCode());
-
-            if(response.getStatusLine().getStatusCode() == 200) {
-                HttpEntity entity = response.getEntity();
-                if (entity != null) {
-                    if(EntityUtils.toString(entity).contains("created")) {
-                        result = "User onboarded successfully";
-                    }
-                    else {
-                        result = "Something went wrong. Please check the logs";
-                    }
-                }
-            }
-            else if(response.getStatusLine().getStatusCode() == 401) {
-                result = "Unauthorized. Admin username/password is incorrect.";
-            }
-            else {
-                result = "Something went wrong on the server side. Please check the logs.";
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        result = AuthUtil.getString(console, result, serviceEndpoint);
+        if(result.contains("CREATED")) {
+            System.out.println("User onboarded successfully.");
         }
-        System.out.println(result);
+        else if(result.contains("NOT_ACCEPTABLE")) {
+            System.out.println("Username already exists. Please choose a unique client username.");
+        }
     }
 }

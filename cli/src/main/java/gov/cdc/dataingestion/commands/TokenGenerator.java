@@ -1,5 +1,6 @@
 package gov.cdc.dataingestion.commands;
 
+import gov.cdc.dataingestion.util.AuthUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -20,49 +21,9 @@ public class TokenGenerator implements Runnable {
     public void run() {
         Console console = System.console();
         String result = "";
+        String serviceEndpoint = "https://dataingestion.datateam-cdc-nbs.eqsandbox.com/token";
         System.out.println("Connecting to NBS Data Ingestion Service...");
-        try {
-            String adminUser = console.readLine("Enter admin username: ");
-            char[] adminPassword = console.readPassword("Enter admin password: ");
-
-//            final String auth = adminUser + ":" + new String(adminPassword);
-//            final byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
-//            final String authHeader = "Basic " + new String(encodedAuth);
-
-            UsernamePasswordCredentials creds = new UsernamePasswordCredentials(adminUser, new String(adminPassword));
-
-//            CloseableHttpClient httpsClient = HttpClientBuilder.create()
-//                    .setDefaultCredentialsProvider(provider)
-//                    .build();
-            CloseableHttpClient httpsClient = HttpClients.createDefault();
-
-//            System.out.println("Password is printing..." + new String(adminPassword));
-
-            HttpPost postRequest = new HttpPost("https://dataingestion.datateam-cdc-nbs.eqsandbox.com/token");
-            postRequest.addHeader("accept", "*/*");
-            postRequest.addHeader(BasicScheme.authenticate(creds, "US-ASCII", false));
-//            postRequest.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
-
-            CloseableHttpResponse response = httpsClient.execute(postRequest);
-
-//            System.out.println("Response status codeeee..." + response.getStatusLine().getStatusCode());
-
-            if(response.getStatusLine().getStatusCode() == 200) {
-                HttpEntity entity = response.getEntity();
-                if (entity != null) {
-                    result = EntityUtils.toString(entity);
-                }
-            }
-            else if(response.getStatusLine().getStatusCode() == 401) {
-                result = "Unauthorized. Admin username/password is incorrect.";
-            }
-            else {
-                result = "Something went wrong on the server side. Please check the logs.";
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        result = AuthUtil.getString(console, result, serviceEndpoint);
         System.out.println(result);
     }
 }
