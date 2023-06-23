@@ -9,36 +9,19 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import java.io.Console;
-
 public class AuthUtil {
+    private static String result = "";
 
-    public static String getString(Console console, String result, String serviceEndpoint) {
+    public static String getString(String adminUser, char[] adminPassword, String serviceEndpoint) {
         try {
-            String adminUser = console.readLine("Enter admin username: ");
-            char[] adminPassword = console.readPassword("Enter admin password: ");
+            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(adminUser, new String(adminPassword));
 
-//            final String auth = adminUser + ":" + new String(adminPassword);
-//            final byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
-//            final String authHeader = "Basic " + new String(encodedAuth);
-
-            UsernamePasswordCredentials creds = new UsernamePasswordCredentials(adminUser, new String(adminPassword));
-
-//            CloseableHttpClient httpsClient = HttpClientBuilder.create()
-//                    .setDefaultCredentialsProvider(provider)
-//                    .build();
             CloseableHttpClient httpsClient = HttpClients.createDefault();
-
-//            System.out.println("Password is printing..." + new String(adminPassword));
-
             HttpPost postRequest = new HttpPost(serviceEndpoint);
             postRequest.addHeader("accept", "*/*");
-            postRequest.addHeader(BasicScheme.authenticate(creds, "US-ASCII", false));
-//            postRequest.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
+            postRequest.addHeader(BasicScheme.authenticate(credentials, "US-ASCII", false));
 
             CloseableHttpResponse response = httpsClient.execute(postRequest);
-
-//            System.out.println("Response status codeeee..." + response.getStatusLine().getStatusCode());
 
             if (response.getStatusLine().getStatusCode() == 200) {
                 HttpEntity entity = response.getEntity();
@@ -50,9 +33,9 @@ public class AuthUtil {
             } else {
                 result = "Something went wrong on the server side. Please check the logs.";
             }
-
+            httpsClient.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            result = "Exception occurred: " + e.getMessage();
         }
         return result;
     }
