@@ -20,28 +20,31 @@ public class RegisterUser implements Runnable {
     @CommandLine.Option(names = {"--adminPassword"}, description = "Admin Password to connect to DI service", interactive = true, required = true)
     char[] adminPassword;
 
+    AuthUtil authUtil = new AuthUtil();
+
 
     @Override
     public void run() {
-//        Console console = System.console();
-//        if (password == null && console != null) {
-//            password = console.readPassword("Enter the secret provided by the client (CASE-SENSITIVE):");
-//        }
         if(username != null && password != null && adminUser != null && adminPassword != null) {
             if(!username.isEmpty() && password.length > 0 && !adminUser.isEmpty() && adminPassword.length > 0) {
                 String serviceEndpoint = "https://dataingestion.datateam-cdc-nbs.eqsandbox.com/registration?username="
                         + username + "&password=" + new String(password);
-                System.out.println("Connecting to NBS Data Ingestion Service...");
-//        String adminUser = console.readLine("Enter admin username: ");
-//        char[] adminPassword = console.readPassword("Enter admin password: ");
-                String apiResponse = AuthUtil.getString(adminUser, adminPassword, serviceEndpoint);
-//                System.out.println("Api response is..." + apiResponse);
-                if(apiResponse.contains("CREATED")) {
-                    System.out.println("User onboarded successfully.");
+                String apiResponse = authUtil.getResponseFromApi(adminUser, adminPassword, serviceEndpoint);
+                if(apiResponse != null) {
+                    if(apiResponse.contains("CREATED")) {
+                        System.out.println("User onboarded successfully.");
+                    }
+                    else if(apiResponse.contains("NOT_ACCEPTABLE")) {
+                        System.out.println("Username already exists. Please choose a unique client username.");
+                    }
+                    else {
+                        System.out.println(apiResponse);
+                    }
                 }
-                else if(apiResponse.contains("NOT_ACCEPTABLE")) {
-                    System.out.println("Username already exists. Please choose a unique client username.");
+                else {
+                    System.err.println("Something went wrong with API. Response came back as null.");
                 }
+
             }
             else {
                 System.err.println("One or more inputs are empty.");
