@@ -10,10 +10,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 public class AuthUtil {
@@ -44,7 +41,7 @@ public class AuthUtil {
                 return "Something went wrong on the server side. Please check the logs.";
             }
         } catch (Exception e) {
-            return "Exception occurred: " + e.getMessage();
+                return "Exception occurred: " + e.getMessage();
         }
     }
 
