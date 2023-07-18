@@ -21,8 +21,6 @@ class TokenGeneratorTest {
     @Mock
     AuthUtil authUtilMock;
 
-    AuthModel authModel = new AuthModel();
-
     private TokenGenerator tokenGenerator;
 
     @BeforeEach
@@ -32,6 +30,8 @@ class TokenGeneratorTest {
         System.setErr(new PrintStream(errStream));
         tokenGenerator = new TokenGenerator();
         tokenGenerator.authUtil = authUtilMock;
+        tokenGenerator.authModel = new AuthModel();
+        tokenGenerator.authModel.setServiceEndpoint("https://dataingestion.datateam-cdc-nbs.eqsandbox.com/token");
     }
 
     @AfterEach
@@ -43,19 +43,15 @@ class TokenGeneratorTest {
     void testRunSuccess() {
         String adminUser = "admin";
         char[] adminPassword = "adminPassword".toCharArray();
-        String serviceEndpoint = "https://dataingestion.datateam-cdc-nbs.eqsandbox.com/token";
         String apiResponse = "Dummy_Token";
 
-//        authModel.setAdminUser();
-//        authModel.
-
-        when(authUtilMock.getResponseFromApi(adminUser, adminPassword, serviceEndpoint)).thenReturn(apiResponse);
+        when(authUtilMock.getResponseFromDIService(any(AuthModel.class))).thenReturn(apiResponse);
 
         tokenGenerator.adminUser = adminUser;
         tokenGenerator.adminPassword = adminPassword;
         tokenGenerator.run();
 
-        verify(authUtilMock).getResponseFromApi(adminUser, adminPassword, serviceEndpoint);
+        verify(authUtilMock).getResponseFromDIService(tokenGenerator.authModel);
         assertEquals(apiResponse, outStream.toString().trim());
     }
 
@@ -63,16 +59,15 @@ class TokenGeneratorTest {
     void testRunAdminUnauthorized() {
         String adminUser = "notAdmin";
         char[] adminPassword = "notAdminPassword".toCharArray();
-        String serviceEndpoint = "https://dataingestion.datateam-cdc-nbs.eqsandbox.com/token";
         String apiResponse = "Unauthorized. Admin username/password is incorrect.";
 
-        when(authUtilMock.getResponseFromApi(adminUser, adminPassword, serviceEndpoint)).thenReturn(apiResponse);
+        when(authUtilMock.getResponseFromDIService(any(AuthModel.class))).thenReturn(apiResponse);
 
         tokenGenerator.adminUser = adminUser;
         tokenGenerator.adminPassword = adminPassword;
         tokenGenerator.run();
 
-        verify(authUtilMock).getResponseFromApi(adminUser, adminPassword, serviceEndpoint);
+        verify(authUtilMock).getResponseFromDIService(tokenGenerator.authModel);
         assertEquals(apiResponse, outStream.toString().trim());
     }
 
@@ -86,7 +81,7 @@ class TokenGeneratorTest {
         tokenGenerator.adminPassword = adminPassword;
         tokenGenerator.run();
 
-        verify(authUtilMock, never()).getResponseFromApi(anyString(), any(char[].class), anyString());
+        verify(authUtilMock, never()).getResponseFromDIService(any(AuthModel.class));
         assertEquals(expectedOutput, errStream.toString().trim());
     }
 
@@ -100,7 +95,7 @@ class TokenGeneratorTest {
         tokenGenerator.adminPassword = adminPassword;
         tokenGenerator.run();
 
-        verify(authUtilMock, never()).getResponseFromApi(anyString(), any(char[].class), anyString());
+        verify(authUtilMock, never()).getResponseFromDIService(any(AuthModel.class));
         assertEquals(expectedOutput, errStream.toString().trim());
     }
 }

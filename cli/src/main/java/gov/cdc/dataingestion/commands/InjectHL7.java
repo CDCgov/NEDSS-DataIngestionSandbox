@@ -28,7 +28,7 @@ public class InjectHL7 implements Runnable {
 
     @Override
     public void run() {
-        if(adminUser != null && adminPassword != null) {
+        if(adminUser != null && adminPassword != null && hl7FilePath != null) {
             if(!adminUser.isEmpty() && adminPassword.length > 0) {
                 String serviceEndpoint = "https://dataingestion.datateam-cdc-nbs.eqsandbox.com/api/reports";
                 // TODO: ADD THE FILE CHECKS AND EXCEPTIONS HERE
@@ -58,7 +58,7 @@ public class InjectHL7 implements Runnable {
             }
         }
         else {
-            System.err.println("Admin username or password is null.");
+            System.err.println("One or more inputs are null.");
         }
 
     }

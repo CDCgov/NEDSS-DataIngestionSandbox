@@ -28,7 +28,7 @@ public class AuthUtil {
             postRequest.addHeader("Content-Type", "text/plain");
             postRequest.addHeader(authHeader);
 
-            if(!authModel.getRequestBody().isEmpty() && authModel.getRequestBody() != "" && authModel.getRequestBody() != null) {
+            if(authModel.getRequestBody() != null && !authModel.getRequestBody().isEmpty() && !authModel.getRequestBody().equals("")) {
                 HttpEntity body = new StringEntity(authModel.getRequestBody());
                 postRequest.setEntity(body);
             }
