@@ -28,6 +28,8 @@ graalvmNative {
         verbose = true
         buildArgs.add("-H:+ReportExceptionStackTraces")
         buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
+        buildArgs.add("--initialize-at-build-time=java.lang.String")
+        buildArgs.add("--initialize-at-build-time=java.util.**")
         buildArgs.add("-H:ReflectionConfigurationFiles=${projectDir}/src/main/resources/reflection-config.json")
     }
 }
