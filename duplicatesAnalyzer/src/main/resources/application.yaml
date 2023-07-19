@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: duplicatesAnalyzer
+
+logging:
+  file: logs/duplicatesAnalyzer.log
+  
+  pattern:
+    console: "%d %-5level %logger : %file-%line : %msg%n"
+    file:    "%d %-5level [%thread] %logger : [ramesh] : %msg%n"
+
+---
+spring:
+  profiles: default
+
+duplicatesAnalyzer:
+  dataFilesDirectory: file:/tmp/csvFilesForAnalysis
+
+thread-pooling:
+  core-pool-size: 25
+  max-pool-size: 300
+
+server:
+  port: 9090
+  tomcat:
+    accept-count: 100
+    max-connections: 10000
+    max-threads: 200
