@@ -1,6 +1,7 @@
 package gov.cdc.nbsauthenticator.controllers;
 
-//import  com.cdceq.jwtgenerator.services.TokenGenerator;
+import  gov.cdc.nbsauthenticator.services.AuthenticatorFactory;
+import  gov.cdc.nbsauthenticator.services.IAuthenticator;
 
 import  io.swagger.annotations.Api;
 import  io.swagger.annotations.ApiOperation;
@@ -11,12 +12,13 @@ import  org.springframework.http.HttpStatus;
 import 	org.springframework.http.MediaType;
 import  org.springframework.http.ResponseEntity;
 import  org.springframework.web.bind.annotation.GetMapping;
+import  org.springframework.web.bind.annotation.PostMapping;
 import  org.springframework.web.bind.annotation.RestController;
-import 	org.springframework.web.bind.annotation.RequestHeader;
+import  org.springframework.web.bind.annotation.RequestParam;
+import  org.springframework.web.bind.annotation.RequestHeader;
 import 	org.springframework.beans.factory.annotation.Autowired;
-import  org.springframework.beans.factory.annotation.Value;
 
-import  javax.servlet.http.HttpServletRequest;
+import  jakarta.servlet.http.HttpServletRequest;
 
 import  org.json.JSONObject;
 import  org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
@@ -31,36 +33,58 @@ import  org.slf4j.LoggerFactory;
 public class AuthenticationController {
     private static Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
-    //@Autowired
-    //private HttpServletRequest request;
+    @Autowired
+    private AuthenticatorFactory authenticatorFactory;
 
-    //@Autowired
-    //private TokenGenerator tokenGenerator;
-
-    //@Value("${jwt.seed}")
-    //private String jwtSeed;
 
     private StandardPBEStringEncryptor decryptor = new StandardPBEStringEncryptor();
     private boolean bInitialized = false;
+
+    private IAuthenticator  authenticator;
+
 
     @Inject
     public AuthenticationController() {
     }
 
-    private void init() {
+    @PostMapping(path = "nbsauth/signon")
+    @ApiOperation(value = "Generate new token")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = String.class)})
+    public ResponseEntity<String> signon(@RequestParam(required = true) String user,
+                                         @RequestParam(required = true) String password,
+                                         HttpServletRequest request) throws Exception {
+
+        if(null == authenticator) {
+            authenticator = authenticatorFactory.getAuthenticator();
+        }
+
+        int authUserId = authenticator.signon(user, password);
+        if(authUserId < 0) {
+            return new ResponseEntity<>("Not authorized", HttpStatus.FORBIDDEN);
+        }
+
+        String remoteAddr = request.getRemoteAddr();;
+        String token = authenticator.createToken(remoteAddr, authUserId, user);
+
+        JSONObject reply = new JSONObject();
+        reply.put("token", token);
+
+        return new ResponseEntity<>(reply.toString(), HttpStatus.OK);
     }
 
     @GetMapping(path = "nbsauth/token")
     @ApiOperation(value = "Generate new token")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = String.class)})
-    public ResponseEntity<String> getToken() throws Exception {
-        init();
+    public ResponseEntity<String> getToken(@RequestHeader(value="Auth-Token") String currentToken, HttpServletRequest request) throws Exception {
+        if(null == authenticator) {
+            authenticator = authenticatorFactory.getAuthenticator();
+        }
 
-        //String remoteAddr = request.getRemoteAddr();
-        //String token = tokenGenerator.generateToken(appPassPhrase, remoteAddr);
+        String remoteAddr = request.getRemoteAddr();
+        String token = authenticator.generateToken(remoteAddr, currentToken);
 
         JSONObject reply = new JSONObject();
-        reply.put("token", "Work-in-pogress");
+        reply.put("token", token);
 
         return new ResponseEntity<>(reply.toString(), HttpStatus.OK);
     }

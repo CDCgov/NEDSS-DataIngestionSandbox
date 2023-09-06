@@ -1,4 +1,4 @@
-package com.cdceq.jwtgenerator.controllers;
+package gov.cdc.nbsauthenticator.controllers;
 
 import 	com.fasterxml.jackson.databind.ObjectMapper;
 

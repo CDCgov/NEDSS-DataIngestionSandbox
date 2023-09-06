@@ -11,7 +11,6 @@ import  java.util.Date;
 @Getter
 public class TokenInfoHolder {
     private String remoteAddress;
-    private String passPhrase;
     private String token;
     private Date expiration;
 }

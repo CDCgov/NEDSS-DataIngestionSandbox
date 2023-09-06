@@ -15,12 +15,12 @@ COPY . /usr/src/nbsauthenticator
 
 WORKDIR /usr/src/nbsauthenticator
 
-#Build jwtgenerator along with any required libraries
-RUN ./gradlew -x test --no-daemon
+#Build software along with any required libraries
+RUN ./gradlew -x test --no-daemon build
 
 FROM amazoncorretto:17
 
-COPY --from=builder /usr/src/nbsauthenticator/build/libs/nbsauthenticator*.jar nbsauthenticator.jar
+COPY --from=builder /usr/src/nbsauthenticator/build/libs/nbsauthenticator-0.0.1-SNAPSHOT.jar nbsauthenticator.jar
 
 # Run jar
 ENTRYPOINT ["java", "-jar", "nbsauthenticator.jar"]
