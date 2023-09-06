@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: authtester
+
+logging:
+  pattern:
+    console: "%d %-5level %logger : %file-%line : %msg%n"
+    file:    "%d %-5level [%thread] %logger : [ramesh] : %msg%n"
+    
+  level:
+    com.apps.restfulApp.api.controller: ERROR
+
+---
+spring:
+  config:
+    active:
+      on-profile: default
+
+auth:
+  url: ${AUTH_URL}
+  secretforalgorithm: ${AUTH_SECRET}
+  user: ${AUTH_USER}
+  password: ${AUTH_USER_PASSWORD}
