@@ -18,6 +18,5 @@ spring:
 
 auth:
   url: ${AUTH_URL}
-  secretforalgorithm: ${AUTH_SECRET}
   user: ${AUTH_USER}
   password: ${AUTH_USER_PASSWORD}

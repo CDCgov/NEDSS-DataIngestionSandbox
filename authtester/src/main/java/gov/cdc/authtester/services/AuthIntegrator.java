@@ -22,15 +22,9 @@ import  javax.net.ssl.HostnameVerifier;
 import  javax.net.ssl.SSLSession;
 import  java.security.cert.X509Certificate;
 
-import  io.jsonwebtoken.Claims;
-import  io.jsonwebtoken.Jwts;
-import  io.jsonwebtoken.SignatureAlgorithm;
-import  javax.crypto.spec.SecretKeySpec;
-import  java.security.Key;
+import  org.json.JSONObject;
 
 import  java.util.Base64;
-
-import  com.google.gson.Gson;
 
 @Component
 public class AuthIntegrator implements ApplicationListener<ApplicationReadyEvent> {
@@ -42,9 +36,6 @@ public class AuthIntegrator implements ApplicationListener<ApplicationReadyEvent
     @Value("${auth.url}")
     private String url;
 
-    @Value("${auth.secretforalgorithm}")
-    private String secretForAlgorithm;
-
     @Value("${auth.user}")
     private String nbsUser;
 
@@ -53,50 +44,45 @@ public class AuthIntegrator implements ApplicationListener<ApplicationReadyEvent
 
     @Override
     public void onApplicationEvent(final ApplicationReadyEvent event) {
-        String signonUrl = getSignonUrl();
-        logger.info("Signon url = {}", signonUrl);
+        try {
+            String signonUrl = getSignonUrl();
+            logger.info("Signon url = {}", signonUrl);
 
-        String token = getToken(signonUrl);
-        if(null == token) {
-            logger.error("Authentication failed, token is null, thus returning");
-            return;
+            String token = getToken(signonUrl);
+            if (null == token) {
+                logger.error("Authentication failed, token is null, thus returning");
+                return;
+            }
+
+            logger.info("Token = {}", token);
+
+            String rolesUrl = String.format("%s/nbsauth/roles", url);
+            logger.info("Roles url = {}", rolesUrl);
+
+            String authRoleName = getRoles(rolesUrl, token);
+            if (null == authRoleName) {
+                logger.error("Auth roles not defined, nothing to authorize, thus returning");
+                return;
+            }
+
+            logger.info("Auth role claim = {}", authRoleName);
+
+            boolean isAllowedToLoadElrData = authRoleName.contains(AUTH_ELR_CLAIM) || authRoleName.contains("allow_elr_data_loading");
+            boolean isAllowedToLoadEcrData = authRoleName.contains(AUTH_ECR_CLAIM) || authRoleName.contains("allow_ecr_data_loading");
+
+            logger.info("Is allowed to load ELR data = {}", isAllowedToLoadElrData);
+            logger.info("Is allowed to load ECR data = {}", isAllowedToLoadEcrData);
         }
-
-        logger.info("Token = {}", token);
-
-        String authRoleName = getAuthRoleClaim(token);
-        if(null == authRoleName) {
-            logger.error("Auth roles not defined, nothing to authorize, thus returning");
-            return;
+        catch(Exception e) {
+            logger.error("Error observed!", e);
         }
-
-        logger.info("Auth role claim = {}", authRoleName);
-
-        boolean isAllowedToLoadElrData = authRoleName.contains(AUTH_ELR_CLAIM);
-        boolean isAllowedToLoadEcrData = authRoleName.contains(AUTH_ECR_CLAIM);
-
-        logger.info("Is allowed to load ELR data = {}", isAllowedToLoadElrData);
-        logger.info("Is allowed to load ECR data = {}", isAllowedToLoadEcrData);
 
     }
 
-    private String getAuthRoleClaim(String token) {
-        Key hmacKey = new SecretKeySpec(secretForAlgorithm.getBytes(), SignatureAlgorithm.HS256.getJcaName());
-        Claims jwtClaims = Jwts.parserBuilder()
-                .setSigningKey(hmacKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        //displayClaims(jwtClaims);
-
-        return (String) jwtClaims.get(AUTH_ROLE_CLAIM);
-    }
-
-    private void displayClaims(Claims jwtClaims) {
-        for(String claimKey : jwtClaims.keySet()) {
-            logger.info("Claim key = {}, Claim = {}", claimKey, jwtClaims.get(claimKey));
-        }
+    private String getRoles(String rolesUrl, String token) throws Exception {
+        String rolesString = getResponse(rolesUrl, token);
+        JSONObject jsonObj = new JSONObject(rolesString);
+        return (String) jsonObj.get("roles");
     }
 
     private String getSignonUrl() {
@@ -111,76 +97,77 @@ public class AuthIntegrator implements ApplicationListener<ApplicationReadyEvent
         return strUrl;
     }
 
-    private String getToken(String signonUrl) {
-        try {
-            if( signonUrl.startsWith("https") ) {
-                // Create a trust manager that does not validate certificate chains
-                TrustManager[] trustAllCerts = new TrustManager[]{
-                        new X509TrustManager() {
-                            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                                return null;
-                            }
+    private String getToken(String signonUrl) throws Exception {
+        String tokenString = getResponse(signonUrl, "");
+        JSONObject jsonObj = new JSONObject(tokenString);
+        return (String) jsonObj.get("token");
+    }
 
-                            public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                            }
+    private String getResponse(String requestUrl, String token) throws Exception {
+        if( requestUrl.startsWith("https") ) {
+            disableTrustStore();
+        }
 
-                            public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                            }
-                        }
-                };
+        URL url = new URL(requestUrl);
+        URLConnection con = url.openConnection();
 
-                // Install the all-trusting trust manager
-                final SSLContext sc = SSLContext.getInstance("SSL");
-                sc.init(null, trustAllCerts, new java.security.SecureRandom());
-                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        if( requestUrl.startsWith("https") ) {
+            HttpsURLConnection https = (HttpsURLConnection) con;
+            https.setRequestMethod("POST");
 
-                // Create all-trusting host name verifier
-                HostnameVerifier allHostsValid = new HostnameVerifier() {
-                    public boolean verify(String hostname, SSLSession session) {
-                        return true;
+            if(token.length() > 0) {
+                https.setRequestProperty("Auth-Token", token);
+            }
+        }
+        else {
+            HttpURLConnection http = (HttpURLConnection) con;
+            http.setRequestMethod("POST");
+
+            if(token.length() > 0) {
+                http.setRequestProperty("Auth-Token", token);
+            }
+        }
+
+
+
+        final Reader reader = new InputStreamReader(con.getInputStream());
+        final BufferedReader br = new BufferedReader(reader);
+
+        String line = "";
+        String responseString = "";
+        while ((line = br.readLine()) != null) {
+            responseString += line;
+        }
+
+        br.close();
+        return responseString;
+    }
+
+    private void disableTrustStore() throws Exception {
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
                     }
-                };
 
-                // Install the all-trusting host verifier
-                HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
-            }
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    }
 
-            URL url = new URL(signonUrl);
-            URLConnection con = url.openConnection();
-
-            if( signonUrl.startsWith("https") ) {
-                HttpsURLConnection https = (HttpsURLConnection) con;
-                https.setRequestMethod("POST");
-            }
-            else {
-                HttpURLConnection http = (HttpURLConnection) con;
-                http.setRequestMethod("POST");
-            }
-
-            final Reader reader = new InputStreamReader(con.getInputStream());
-            final BufferedReader br = new BufferedReader(reader);
-
-            String line = "";
-            String tokenString = null;
-            while ((line = br.readLine()) != null) {
-                //logger.info("Received data from server = {}", line);
-                if(line.indexOf("token") > 0) {
-                    tokenString = line;
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    }
                 }
+        };
+
+        final SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+        HostnameVerifier allHostsValid = new HostnameVerifier() {
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
             }
+        };
 
-            br.close();
-
-            Gson g = new Gson();
-            TokenInfoHolder tokenInfo = g.fromJson(tokenString, TokenInfoHolder.class);
-            //logger.info("Token = {}", tokenInfo.getToken()); //John
-
-            return tokenInfo.getToken();
-        }
-        catch(Exception e) {
-            logger.error("Exception observed, {}", e.toString());
-        }
-
-        return null;
+        HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
     }
 }
