@@ -12,35 +12,23 @@ import	lombok.Setter;
 import  org.slf4j.Logger;
 import  org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+
 @NoArgsConstructor
 @Getter
 @Setter
 public class CommonAuthenticator implements IAuthenticator {
-    private static Logger logger = LoggerFactory.getLogger(NbsClassicAuthAuthenticator.class);
+    private static Logger logger = LoggerFactory.getLogger(CommonAuthenticator.class);
 
-    private NbsAuthUsersRepository authUsersRepo;
-    private NbsAuthUserRolesRepository authRolesRepo;
-    private ITokenGenerator tokenGenerator;
-
-    public void setAuthUserRepository(NbsAuthUsersRepository authUsersRepo) {
-        this.authUsersRepo = authUsersRepo;
-    }
-    public void setAuthRolesRepository(NbsAuthUserRolesRepository authRolesRepo) {
-        this.authRolesRepo = authRolesRepo;
-    }
-
-    public int signon(String user, String userPassword) {
-        return -1;
-    }
-    public String createToken(String remoteAddr, int authUserId, String user) throws Exception {
-        return "to_be_implemented";
+    public String signon(String remoteAddr, String user, String userPassword) throws Exception {
+        return null;
     }
 
     public String generateToken(String remoteAddr, String currentToken) throws Exception {
         return "to_be_implemented";
     }
 
-    public void setTokenGenerator(ITokenGenerator tokenGenerator) {
-        this.tokenGenerator = tokenGenerator;
+    public HashMap<String, String> getRoles(String remoteAddr, String currentToken) throws Exception {
+        return new HashMap<>();
     }
 }

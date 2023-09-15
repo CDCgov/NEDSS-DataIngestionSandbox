@@ -1,11 +1,5 @@
 package gov.cdc.nbsauthenticator.services;
 
-import  gov.cdc.nbsauthenticator.services.authimpls.OktaAuthAuthenticator;
-import  gov.cdc.nbsauthenticator.services.authimpls.NbsClassicAuthAuthenticator;
-import  gov.cdc.nbsauthenticator.services.TokenGenerator;
-import  gov.cdc.nbsauthenticator.repositories.NbsAuthUsersRepository;
-import  gov.cdc.nbsauthenticator.repositories.NbsAuthUserRolesRepository;
-
 import 	lombok.NoArgsConstructor;
 import 	org.springframework.stereotype.Service;
 import 	org.springframework.beans.factory.annotation.Value;
@@ -21,27 +15,31 @@ public class AuthenticatorFactory {
 
     private static String NBSCLASSIC_PROVIDER = "nbsclassic";
     private static String OKTA_PROVIDER = "okta";
+    private static String KEYCLOCK_PROVIDER = "keycloak";
 
     @Value("${auth.provider}")
     private String authProvider;
 
     @Autowired
-    private NbsAuthUsersRepository authUsersRepository;
+    private IAuthenticator keyCloakAuthAuthenticator;
 
     @Autowired
-    private NbsAuthUserRolesRepository authRolesRepository;
+    private IAuthenticator oktaAuthAuthenticator;
 
     @Autowired
-    private TokenGenerator tokenGenerator;
+    private IAuthenticator nbsClassicAuthAuthenticator;
 
     public IAuthenticator getAuthenticator() {
-        IAuthenticator authenticator = (OKTA_PROVIDER.equals(authProvider)
-                                            ? new OktaAuthAuthenticator()
-                                            : new NbsClassicAuthAuthenticator());
+        IAuthenticator authenticator = nbsClassicAuthAuthenticator; // default
 
-        authenticator.setAuthUserRepository(authUsersRepository);
-        authenticator.setAuthRolesRepository(authRolesRepository);
-        authenticator.setTokenGenerator(tokenGenerator);
+        logger.info("Authentication provider = {}", authProvider);
+
+        if( OKTA_PROVIDER.equals(authProvider) ) {
+            authenticator = oktaAuthAuthenticator;
+        }
+        else if( KEYCLOCK_PROVIDER.equals(authProvider) ) {
+            authenticator = keyCloakAuthAuthenticator;
+        }
 
         return authenticator;
     }

@@ -27,6 +27,7 @@ import  javax.inject.Inject;
 
 import  org.slf4j.Logger;
 import  org.slf4j.LoggerFactory;
+import  java.util.HashMap;
 
 @RestController
 @Api(value = "NBS Authentication Controller", produces = MediaType.APPLICATION_XML_VALUE)
@@ -41,7 +42,6 @@ public class AuthenticationController {
     private boolean bInitialized = false;
 
     private IAuthenticator  authenticator;
-
 
     @Inject
     public AuthenticationController() {
@@ -58,16 +58,32 @@ public class AuthenticationController {
             authenticator = authenticatorFactory.getAuthenticator();
         }
 
-        int authUserId = authenticator.signon(user, password);
-        if(authUserId < 0) {
+        String remoteAddr = request.getRemoteAddr();;
+
+        String token = authenticator.signon(remoteAddr, user, password);
+        if(null == token) {
             return new ResponseEntity<>("Not authorized", HttpStatus.FORBIDDEN);
         }
 
-        String remoteAddr = request.getRemoteAddr();;
-        String token = authenticator.createToken(remoteAddr, authUserId, user);
-
         JSONObject reply = new JSONObject();
         reply.put("token", token);
+
+        return new ResponseEntity<>(reply.toString(), HttpStatus.OK);
+    }
+
+    @PostMapping(path = "nbsauth/roles")
+    @ApiOperation(value = "Return decoded roles as json")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = String.class)})
+    public ResponseEntity<String> getRoles(@RequestHeader(value="Auth-Token") String currentToken, HttpServletRequest request) throws Exception {
+        if(null == authenticator) {
+            authenticator = authenticatorFactory.getAuthenticator();
+        }
+
+        String remoteAddr = request.getRemoteAddr();
+        HashMap<String, String> roles = authenticator.getRoles(remoteAddr, currentToken);
+
+        JSONObject reply = new JSONObject();
+        reply.put("roles", roles);
 
         return new ResponseEntity<>(reply.toString(), HttpStatus.OK);
     }

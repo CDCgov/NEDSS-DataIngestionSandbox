@@ -1,15 +1,27 @@
 package gov.cdc.nbsauthenticator.services.authimpls;
 
+import gov.cdc.nbsauthenticator.repositories.NbsAuthUserRolesRepository;
+import gov.cdc.nbsauthenticator.repositories.NbsAuthUsersRepository;
 import  gov.cdc.nbsauthenticator.repositories.models.NbsAuthUserRoleModel;
 
+import gov.cdc.nbsauthenticator.services.IAuthenticator;
+import gov.cdc.nbsauthenticator.services.ITokenGenerator;
+import gov.cdc.nbsauthenticator.services.TokenGenerator;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import	lombok.NoArgsConstructor;
 import	lombok.Getter;
 import	lombok.Setter;
 
 import  org.slf4j.Logger;
 import  org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import  org.springframework.stereotype.Component;
 
+import javax.crypto.spec.SecretKeySpec;
 import  java.math.BigInteger;
+import java.security.Key;
 import  java.util.Base64;
 import  java.util.List;
 import  java.util.HashMap;
@@ -17,26 +29,41 @@ import  java.util.HashMap;
 @NoArgsConstructor
 @Getter
 @Setter
+@Component
 public class NbsClassicAuthAuthenticator extends CommonAuthenticator {
     private static Logger logger = LoggerFactory.getLogger(NbsClassicAuthAuthenticator.class);
 
+    @Autowired
+    private NbsAuthUsersRepository authUsersRepository;
+
+    @Autowired
+    private NbsAuthUserRolesRepository authRolesRepository;
+
+    @Autowired
+    private TokenGenerator tokenGenerator;
+
+
     @Override
-    public int signon(String user, String userPassword) {
+    public String signon(String remoteAddr, String user, String userPassword) throws Exception {
         // Good: http://localhost:8090/nbsauth/signon?user=bmVkc3NfZWxyX2xvYWQ=&password=bmJzMjAyMw==
         // Bad : http://localhost:8090/nbsauth/signon?user=cmFtZXNo&password=bmJzMjAyMw==
 
         String clearUser = new String(Base64.getDecoder().decode(user));
         String clearPassword = new String(Base64.getDecoder().decode(userPassword));
 
-        BigInteger authUserId = getAuthUsersRepo().getAuthUserIdUsingUserIdAndPassword(clearUser, clearPassword);
-        if(null == authUserId) return -1;
+        BigInteger authUserId = authUsersRepository.getAuthUserIdUsingUserIdAndPassword(clearUser, clearPassword);
+        if(null == authUserId) return null;
 
-        return authUserId.intValue();
+        return createToken(remoteAddr, authUserId.intValue(), user);
     }
 
     @Override
-    public String createToken(String remoteAddr, int authUserId, String user) throws Exception {
-        List<NbsAuthUserRoleModel>  roles = getAuthRolesRepo().getAuthRolesForAuthUserId(authUserId);
+    public HashMap<String, String> getRoles(String remoteAddr, String currentToken) throws Exception {
+        return tokenGenerator.getRoles(remoteAddr, currentToken);
+    }
+
+    private String createToken(String remoteAddr, int authUserId, String user) throws Exception {
+        List<NbsAuthUserRoleModel>  roles = authRolesRepository.getAuthRolesForAuthUserId(authUserId);
 
         StringBuffer programAreaCodes = new StringBuffer();
         StringBuffer authRoleNames = new StringBuffer();
@@ -70,7 +97,7 @@ public class NbsClassicAuthAuthenticator extends CommonAuthenticator {
         authClaims.put("auth_user", user);
         authClaims.put("auth_user_id", String.valueOf(authUserId));
 
-        String token = getTokenGenerator().createToken(remoteAddr, authClaims);
+        String token = tokenGenerator.createToken(remoteAddr, authClaims);
 
         return token;
     }
@@ -82,7 +109,7 @@ public class NbsClassicAuthAuthenticator extends CommonAuthenticator {
             throw new Exception("Invalid token, please signon again");
         }
 
-        String newToken = getTokenGenerator().generateToken(remoteAddr, currentToken);
+        String newToken = tokenGenerator.generateToken(remoteAddr, currentToken);
 
         return newToken;
     }

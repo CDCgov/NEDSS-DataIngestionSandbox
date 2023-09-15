@@ -28,4 +28,20 @@ spring:
 
 auth:
   provider: ${AUTH_FACTORY}
-  secretforalgorithm: ${AUTH_SECRET}
+
+  nbsclassic:
+    secretforalgorithm: ${AUTH_SECRET}
+
+  keycloak:
+    url: ${KEYCLOAK_URL}
+    infourl: ${KEYCLOAK_INFOURL}
+    clientid: ${KEYCLOAK_CLIENT_ID}
+    clientsecret: ${KEYCLOAK_CLIENT_SECRET}
+
+
+
+
+
+
+
+

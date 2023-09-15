@@ -13,6 +13,7 @@ import  javax.crypto.spec.SecretKeySpec;
 import  java.security.Key;
 
 import  java.util.Map;
+import  java.util.Set;
 import	java.util.UUID;
 import	java.util.Date;
 import  java.util.HashMap;
@@ -29,7 +30,7 @@ public class TokenGenerator implements ITokenGenerator {
 	private static Logger logger = LoggerFactory.getLogger(TokenGenerator.class);
     private static HashMap<String, TokenInfoHolder> tokensMap = new HashMap<>();
 
-    @Value("${auth.secretforalgorithm}")
+    @Value("${auth.nbsclassic.secretforalgorithm}")
     private String secretForAlgorithm = "A picture is worth a thousand words. Implies, artwork or images can convey meanings that go beyond verbal description.";
 
     @Value("${spring.application.name}")
@@ -55,6 +56,23 @@ public class TokenGenerator implements ITokenGenerator {
         isValid = ((lAllowed - lDuration) > 0);
 
         return isValid;
+    }
+
+    public HashMap<String, String> getRoles(String remoteAddr, String currentToken) {
+        Key hmacKey = new SecretKeySpec(secretForAlgorithm.getBytes(), SignatureAlgorithm.HS256.getJcaName());
+        Claims jwtClaims = Jwts.parserBuilder()
+                .setSigningKey(hmacKey)
+                .build()
+                .parseClaimsJws(currentToken)
+                .getBody();
+
+        HashMap<String, String> roles = new HashMap<>();
+        Set<String> keys = jwtClaims.keySet();
+        for(String aKey : keys) {
+            roles.put(aKey, (String) jwtClaims.get(aKey).toString());
+        }
+
+        return roles;
     }
 
     @Override
