@@ -76,21 +76,19 @@ public class AuthServiceDemonostrator implements CommandLineRunner {
 
 		String rolesString = getResponse(rolesUrl, tokens[0]);
 		JSONObject jsonObj = new JSONObject(rolesString);
-		String authRoleName = (String) jsonObj.get("roles");
-		if (null == authRoleName) {
+		String authRoles = (String) jsonObj.get("roles");
+		if (null == authRoles) {
 			logger.error("Auth roles not defined, nothing to authorize, thus returning");
 			return;
 		}
 
-		logger.info("Auth roles = {}", authRoleName);
+		logger.info("Auth roles = {}", authRoles);
 
-		boolean isAllowedToLoadElrData = authRoleName.contains(AUTH_ELR_CLAIM) || authRoleName.contains("allow_elr_data_loading");
-		boolean isAllowedToLoadEcrData = authRoleName.contains(AUTH_ECR_CLAIM) || authRoleName.contains("allow_ecr_data_loading");
+		boolean isAllowedToLoadElrData = authRoles.contains(AUTH_ELR_CLAIM) || authRoles.contains("allow_elr_data_loading");
+		boolean isAllowedToLoadEcrData = authRoles.contains(AUTH_ECR_CLAIM) || authRoles.contains("allow_ecr_data_loading");
 
 		logger.info("Is allowed to load ELR data = {}", isAllowedToLoadElrData);
 		logger.info("Is allowed to load ECR data = {}", isAllowedToLoadEcrData);
-
-		return;
 	}
 
 	private String[] demoSignon() throws Exception {
@@ -106,7 +104,7 @@ public class AuthServiceDemonostrator implements CommandLineRunner {
 
 		String tokensStr = getResponse(signonUrl, "");
 		String[] tokens = getTokensFromResponse(tokensStr);
-		if ((null == tokens) || (tokens[0] == null)) {
+		if ((null == tokens) || (tokens[0] == null) || (tokens[1] == null)) {
 			logger.error("Authentication failed, token(s) is/are null, thus returning");
 			return tokens;
 		}
@@ -117,11 +115,9 @@ public class AuthServiceDemonostrator implements CommandLineRunner {
 
 	private String[] getTokensFromResponse(String tokensResponseStr) throws Exception {
 		JSONObject jsonObj = new JSONObject(tokensResponseStr);
-		String tokensStr = jsonObj.getString("tokens");
-		JSONObject tokensJsonObj = new JSONObject(tokensStr);
 		String[] tokens = new String[2];
-		tokens[0] = tokensJsonObj.getString("token");
-		tokens[1] = tokensJsonObj.getString("refreshToekn");
+		tokens[0] = jsonObj.getString("token");
+		tokens[1] = jsonObj.getString("refreshToken");
 		return tokens;
 	}
 
