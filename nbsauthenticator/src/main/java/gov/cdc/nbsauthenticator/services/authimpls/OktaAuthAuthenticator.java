@@ -16,8 +16,8 @@ public class OktaAuthAuthenticator extends CommonAuthenticator {
     private static Logger logger = LoggerFactory.getLogger(OktaAuthAuthenticator.class);
 
     @Override
-    public String signon(String remoteAddr, String user, String userPassword) throws Exception {
+    public String[] signon(String remoteAddr, String user, String userPassword) throws Exception {
         logger.info("OktaAuthAuthenticator::signon");
-        return "";
+        return super.signon(remoteAddr, user, userPassword);
     }
 }

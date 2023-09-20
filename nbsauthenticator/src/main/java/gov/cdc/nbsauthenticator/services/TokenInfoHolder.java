@@ -13,4 +13,5 @@ public class TokenInfoHolder {
     private String remoteAddress;
     private String token;
     private Date expiration;
+    private String refreshToken;
 }

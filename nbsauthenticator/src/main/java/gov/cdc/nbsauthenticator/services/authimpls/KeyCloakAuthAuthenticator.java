@@ -1,15 +1,24 @@
 package gov.cdc.nbsauthenticator.services.authimpls;
 
 import com.google.gson.Gson;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 import	lombok.NoArgsConstructor;
 import	lombok.Getter;
 import	lombok.Setter;
 
 import  org.apache.http.impl.client.CloseableHttpClient;
+import org.json.JSONObject;
 import  org.slf4j.Logger;
 import  org.slf4j.LoggerFactory;
 import  org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import  org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import javax.net.ssl.*;
 import java.io.BufferedReader;
@@ -48,7 +57,7 @@ public class KeyCloakAuthAuthenticator extends CommonAuthenticator {
     private CloseableHttpClient httpClient = null;
 
     @Override
-    public String signon(String remoteAddr, String user, String userPassword) throws Exception {
+    public String[] signon(String remoteAddr, String user, String userPassword) throws Exception {
         String clearUser = new String(Base64.getDecoder().decode(user));
         String clearPassword = new String(Base64.getDecoder().decode(userPassword));
 
@@ -58,18 +67,25 @@ public class KeyCloakAuthAuthenticator extends CommonAuthenticator {
                 clientId,
                 clientSecret);
 
+        String[] returnValues = new String[2];
+
         String response = getResponse(url, urlParameters);
         if(response.indexOf("access_token") > -1) {
             KeyCloakTokenDataHolder data = gson.fromJson(response, KeyCloakTokenDataHolder.class);
-            return data.getAccess_token();
+            returnValues[0] = data.getAccess_token();
         }
 
-        logger.info("signonResponseString = " + response);
-        return null;
+        if(response.indexOf("refresh_token") > -1) {
+            KeyCloakTokenDataHolder data = gson.fromJson(response, KeyCloakTokenDataHolder.class);
+            returnValues[1] = data.getRefresh_token();
+        }
+
+        logger.debug("signon [response = {}]", response);
+        return returnValues;
     }
 
     @Override
-    public HashMap<String, String> getRoles(String remoteAddr, String currentToken) throws Exception {
+    public String getRoles(String remoteAddr, String currentToken) throws Exception {
         String urlParameters  = String.format("client_id=%s&client_secret=%s&token=%s",
                 clientId,
                 clientSecret,
@@ -79,15 +95,40 @@ public class KeyCloakAuthAuthenticator extends CommonAuthenticator {
         if(response.indexOf("realm_access") > -1) {
             KeyCloakTokenInfoHolder info = gson.fromJson(response, KeyCloakTokenInfoHolder.class);
             String[] roles = info.getRealm_access().getRoles();
-            HashMap<String, String> mapOfRoles = new HashMap<>();
+            StringBuffer sb = new StringBuffer();
             for(String s : roles) {
-                mapOfRoles.put(s, s);
+                sb.append(s);
+                sb.append(", ");
             }
 
-            return mapOfRoles;
+            return sb.toString();
         }
 
         return null;
+    }
+
+    @Override
+    public String[] generateToken(String remoteAddr, String refreshToken) throws Exception {
+        String urlParameters  = String.format("client_id=%s&client_secret=%s&refresh_token=%s&grant_type=refresh_token",
+                clientId,
+                clientSecret,
+                refreshToken);
+
+        String[] returnValues = new String[2];
+
+        String response = getResponse(url, urlParameters);
+        if(response.indexOf("access_token") > -1) {
+            KeyCloakTokenDataHolder data = gson.fromJson(response, KeyCloakTokenDataHolder.class);
+            returnValues[0] = data.getAccess_token();
+        }
+
+        if(response.indexOf("refresh_token") > -1) {
+            KeyCloakTokenDataHolder data = gson.fromJson(response, KeyCloakTokenDataHolder.class);
+            returnValues[1] = data.getRefresh_token();
+        }
+
+        logger.info("generateToken [response = {}]", response);
+        return returnValues;
     }
 
     private HttpsURLConnection initializeHttpsConnection(URLConnection con, int postDataLength) throws Exception {

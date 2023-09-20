@@ -11,7 +11,6 @@ import  io.swagger.annotations.ApiResponses;
 import  org.springframework.http.HttpStatus;
 import 	org.springframework.http.MediaType;
 import  org.springframework.http.ResponseEntity;
-import  org.springframework.web.bind.annotation.GetMapping;
 import  org.springframework.web.bind.annotation.PostMapping;
 import  org.springframework.web.bind.annotation.RestController;
 import  org.springframework.web.bind.annotation.RequestParam;
@@ -28,6 +27,7 @@ import  javax.inject.Inject;
 import  org.slf4j.Logger;
 import  org.slf4j.LoggerFactory;
 import  java.util.HashMap;
+import  java.util.Map;
 
 @RestController
 @Api(value = "NBS Authentication Controller", produces = MediaType.APPLICATION_XML_VALUE)
@@ -60,13 +60,16 @@ public class AuthenticationController {
 
         String remoteAddr = request.getRemoteAddr();;
 
-        String token = authenticator.signon(remoteAddr, user, password);
-        if(null == token) {
+        String tokens[] = authenticator.signon(remoteAddr, user, password);
+        if((null == tokens) || (null == tokens[1])) {
             return new ResponseEntity<>("Not authorized", HttpStatus.FORBIDDEN);
         }
 
         JSONObject reply = new JSONObject();
-        reply.put("token", token);
+        reply.put("token", tokens[0]);
+        reply.put("refreshToken", tokens[1]);
+
+        logger.info("Completed signon, returning token[0] = {}, token[1]", tokens[0], tokens[1]);
 
         return new ResponseEntity<>(reply.toString(), HttpStatus.OK);
     }
@@ -80,15 +83,16 @@ public class AuthenticationController {
         }
 
         String remoteAddr = request.getRemoteAddr();
-        HashMap<String, String> roles = authenticator.getRoles(remoteAddr, currentToken);
+        String rolesStr = authenticator.getRoles(remoteAddr, currentToken);
 
         JSONObject reply = new JSONObject();
-        reply.put("roles", roles);
+        reply.put("roles", rolesStr);
 
+        logger.info("Returning obtained roles");
         return new ResponseEntity<>(reply.toString(), HttpStatus.OK);
     }
 
-    @GetMapping(path = "nbsauth/token")
+    @PostMapping(path = "nbsauth/token")
     @ApiOperation(value = "Generate new token")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = String.class)})
     public ResponseEntity<String> getToken(@RequestHeader(value="Auth-Token") String currentToken, HttpServletRequest request) throws Exception {
@@ -97,10 +101,13 @@ public class AuthenticationController {
         }
 
         String remoteAddr = request.getRemoteAddr();
-        String token = authenticator.generateToken(remoteAddr, currentToken);
+        String[] tokens = authenticator.generateToken(remoteAddr, currentToken);
 
         JSONObject reply = new JSONObject();
-        reply.put("token", token);
+        reply.put("token", tokens[0]);
+        reply.put("refreshToken", tokens[1]);
+
+        logger.info("Completed refresh token, returning token[0] = {}, token[1]", tokens[0], tokens[1]);
 
         return new ResponseEntity<>(reply.toString(), HttpStatus.OK);
     }

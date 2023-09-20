@@ -58,7 +58,7 @@ public class TokenGenerator implements ITokenGenerator {
         return isValid;
     }
 
-    public HashMap<String, String> getRoles(String remoteAddr, String currentToken) {
+    public String getRoles(String remoteAddr, String currentToken) {
         Key hmacKey = new SecretKeySpec(secretForAlgorithm.getBytes(), SignatureAlgorithm.HS256.getJcaName());
         Claims jwtClaims = Jwts.parserBuilder()
                 .setSigningKey(hmacKey)
@@ -66,13 +66,7 @@ public class TokenGenerator implements ITokenGenerator {
                 .parseClaimsJws(currentToken)
                 .getBody();
 
-        HashMap<String, String> roles = new HashMap<>();
-        Set<String> keys = jwtClaims.keySet();
-        for(String aKey : keys) {
-            roles.put(aKey, (String) jwtClaims.get(aKey).toString());
-        }
-
-        return roles;
+        return (String) jwtClaims.get("auth_role_nm");
     }
 
     @Override

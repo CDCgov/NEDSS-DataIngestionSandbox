@@ -44,22 +44,39 @@ public class NbsClassicAuthAuthenticator extends CommonAuthenticator {
 
 
     @Override
-    public String signon(String remoteAddr, String user, String userPassword) throws Exception {
-        // Good: http://localhost:8090/nbsauth/signon?user=bmVkc3NfZWxyX2xvYWQ=&password=bmJzMjAyMw==
-        // Bad : http://localhost:8090/nbsauth/signon?user=cmFtZXNo&password=bmJzMjAyMw==
-
+    public String[] signon(String remoteAddr, String user, String userPassword) throws Exception {
         String clearUser = new String(Base64.getDecoder().decode(user));
         String clearPassword = new String(Base64.getDecoder().decode(userPassword));
 
         BigInteger authUserId = authUsersRepository.getAuthUserIdUsingUserIdAndPassword(clearUser, clearPassword);
         if(null == authUserId) return null;
 
-        return createToken(remoteAddr, authUserId.intValue(), user);
+        String generatedToken = createToken(remoteAddr, authUserId.intValue(), user);
+        String[] returnValues = new String[2];
+        returnValues[0] = generatedToken;
+        returnValues[1] = generatedToken;
+
+        return returnValues;
     }
 
     @Override
-    public HashMap<String, String> getRoles(String remoteAddr, String currentToken) throws Exception {
+    public String getRoles(String remoteAddr, String currentToken) throws Exception {
         return tokenGenerator.getRoles(remoteAddr, currentToken);
+    }
+
+    @Override
+    public String[] generateToken(String remoteAddr, String currentToken) throws Exception {
+        boolean isCurrentTokenValid = getTokenGenerator().verifyToken(remoteAddr, currentToken);
+        if(!isCurrentTokenValid) {
+            throw new Exception("Invalid token, please signon again");
+        }
+
+        String newToken = tokenGenerator.generateToken(remoteAddr, currentToken);
+        String[] returnValues = new String[2];
+        returnValues[0] = newToken;
+        returnValues[1] = newToken;
+
+        return returnValues;
     }
 
     private String createToken(String remoteAddr, int authUserId, String user) throws Exception {
@@ -100,17 +117,5 @@ public class NbsClassicAuthAuthenticator extends CommonAuthenticator {
         String token = tokenGenerator.createToken(remoteAddr, authClaims);
 
         return token;
-    }
-
-    @Override
-    public String generateToken(String remoteAddr, String currentToken) throws Exception {
-        boolean isCurrentTokenValid = getTokenGenerator().verifyToken(remoteAddr, currentToken);
-        if(!isCurrentTokenValid) {
-            throw new Exception("Invalid token, please signon again");
-        }
-
-        String newToken = tokenGenerator.generateToken(remoteAddr, currentToken);
-
-        return newToken;
     }
 }
