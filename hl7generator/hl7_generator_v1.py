@@ -587,12 +587,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         pv1_52 = "" # PV1.52 - Other Healthcare Provider ------ B
 
         # Concatenate all variables with pipe separator
-        PV1_body = "|".join([pv1_1, pv1_2, pv1_3, pv1_4, pv1_5, pv1_6, pv1_7, pv1_8, pv1_9, pv1_10,
-                        pv1_11, pv1_12, pv1_13, pv1_14, pv1_15, pv1_16, pv1_17, pv1_18, pv1_19, pv1_20,
-                        pv1_21, pv1_22, pv1_23, pv1_24, pv1_25, pv1_26, pv1_27, pv1_28, pv1_29, pv1_30,
-                        pv1_31, pv1_32, pv1_33, pv1_34, pv1_35, pv1_36, pv1_37, pv1_38, pv1_39, pv1_40,
-                        pv1_41, pv1_42, pv1_43, pv1_44, pv1_45, pv1_46, pv1_47, pv1_48, pv1_49, pv1_50,
-                        pv1_51, pv1_52])
+        PV1_body = "|".join([pv1_1, pv1_2])
 
         PV1 = f"PV1|{PV1_body}"
     
