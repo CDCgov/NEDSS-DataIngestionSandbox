@@ -522,9 +522,76 @@ def generateELR(numoELRs, conditionCode, output_folder):
         f"{pid11}|{pid12}|{pid13}|{pid14}|{pid15}|{pid16}|{pid17}|{pid18}|{pid19}|{pid31}|{pid33}|{pid34}|{pid35}")
         
         ## PV1
-        PV1 = (
-        f"PV1|"
-        )
+        
+
+        # The PV1 segment is used by Registration/Patient Administration 
+        # applications to communicate information on an account or visit-specific basis.
+        
+        
+        # Creating values for PV1_2
+        PV1_2_values = {"B", "C", "E", "I", "O", "N", "P", "R", "U"}
+        PV1_2_choice = random.choice(list(PV1_2_values))
+
+        # Generating variables for PV1 Segemnt
+        pv1_1 = "" # PV1.1 - Set ID - PV1
+        pv1_2 = PV1_2_choice # PV1.2 - Patient Class ----- R
+        pv1_3 = "" # PV1.3 - Assigned Patient Location
+        pv1_4 = "" # PV1.4 - Admission Type
+        pv1_5 = "" # PV1.5 - Preadmit Number
+        pv1_6 = "" # PV1.6 - Prior Patient Location
+        pv1_7 = "" # PV1.7 - Attending Doctor
+        pv1_8 = "" # PV1.8 - Referring Doctor
+        pv1_9 = "" # PV1.9 - Consulting Doctor ----- B
+        pv1_10 = "" # PV1.10 - Hospital Service
+        pv1_11 = "" # PV1.11 - Temporary Location
+        pv1_12 = "" # PV1.12 - Preadmit Test Indicator
+        pv1_13 = "" # PV1.13 - Re-admission Indicator
+        pv1_14 = "" # PV1.14 - Admit Source
+        pv1_15 = "" # PV1.15 - Ambulatory Status
+        pv1_16 = "" # PV1.16 - VIP Indicator
+        pv1_17 = "" # PV1.17 - Admitting Doctor
+        pv1_18 = "" # PV1.18 - Patient Type
+        pv1_19 = "" # PV1.19 - Visit Number
+        pv1_20 = "" # PV1.20 - Financial Class
+        pv1_21 = "" # PV1.21 - Charge Price Indicator
+        pv1_22 = "" # PV1.22 - Courtesy Code
+        pv1_23 = "" # PV1.23 - Credit Rating
+        pv1_24 = "" # PV1.24 - Contract Code
+        pv1_25 = "" # PV1.25 - Contract Effective Date
+        pv1_26 = "" # PV1.26 - Contract Amount
+        pv1_27 = "" # PV1.27 - Contract Period
+        pv1_28 = "" # PV1.28 - Interest Code
+        pv1_29 = "" # PV1.29 - Transfer to Bad Debt Code
+        pv1_30 = "" # PV1.30 - Transfer to Bad Debt Date
+        pv1_31 = "" # PV1.31 - Bad Debt Agency Code
+        pv1_32 = "" # PV1.32 - Bad Debt Transfer Amount
+        pv1_33 = "" # PV1.33 - Bad Debt Recovery Amount
+        pv1_34 = "" # PV1.34 - Delete Account Indicator
+        pv1_35 = "" # PV1.35 - Delete Account Date
+        pv1_36 = "" # PV1.36 - Discharge Disposition
+        pv1_37 = "" # PV1.37 - Discharged to Location
+        pv1_38 = "" # PV1.38 - Diet Type
+        pv1_39 = "" # PV1.39 - Servicing Facility
+        pv1_40 = "" # PV1.40 - Bed Status ----- B
+        pv1_41 = "" # PV1.41 - Account Status
+        pv1_42 = "" # PV1.42 - Pending Location
+        pv1_43 = "" # PV1.43 - Prior Temporary Location
+        pv1_44 = "" # PV1.44 - Admit Date/Time
+        pv1_45 = "" # PV1.45 - Discharge Date/Time
+        pv1_46 = "" # PV1.46 - Current Patient Balance
+        pv1_47 = "" # PV1.47 - Total Charges
+        pv1_48 = "" # PV1.48 - Total Adjustments
+        pv1_49 = "" # PV1.49 - Total Payments
+        pv1_50 = "" # PV1.50 - Alternate Visit ID
+        pv1_51 = "" # PV1.51 - Visit Indicator
+        pv1_52 = "" # PV1.52 - Other Healthcare Provider ------ B
+
+        # Concatenate all variables with pipe separator
+        PV1_body = "|".join([pv1_1, pv1_2])
+
+        PV1 = f"PV1|{PV1_body}"
+    
+
 
         ## OBR - This segment is used to transmit information specific to an order for a diagnostic study or observation, physical exam, or assessment.
         obr1 = "1"  #OBR_1 - Set ID - OBR -- has to be incremental based on the Observations existing
