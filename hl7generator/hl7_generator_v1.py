@@ -1275,9 +1275,44 @@ def generateELR(numoELRs, conditionCode, output_folder):
         )
 
         ## OBX
-        OBX = (
-        f"OBX|"
-        )
+
+        # The OBX segment is used to transmit a single observation or observation
+        # fragment. It represents the smallest indivisible unit of a report. 
+        
+
+        # ------- Observation --------
+
+        # Creating variables for OBX segments
+        OBX_1 = "1"  # Set ID - OBX (Set ID)
+        OBX_2 = "NM"  # Value Type --- C
+        OBX_3 = "{patDiseaseCode}^{patDisease}^LN"  # Observation Identifier --- R
+        OBX_4 = ""  # Observation Sub-ID --- C
+        OBX_5 = ""  # Observation Value --- C
+        OBX_6 = ""  # Units
+        OBX_7 = ""  # References Range
+        OBX_8 = ""  # Abnormal Flags
+        OBX_9 = ""  # Probability
+        OBX_10 = ""  # Nature of Abnormal Test
+        OBX_11 = random.choice(['R', 'F'])  # Observation Result Status ---- R
+        OBX_12 = ""  # Effective Date of Reference Range
+        OBX_13 = ""  # User Defined Access Checks
+        OBX_14 = ""  # Date/Time of the Observation
+        OBX_15 = ""  # Producer's ID
+        OBX_16 = ""  # Responsible Observer
+        OBX_17 = ""  # Observation Method
+        OBX_18 = ""  # Equipment Instance Identifier
+        OBX_19 = char_time  # Date/Time of the Analysis ----- R
+        OBX_20 = ""  # Reserved for harmonization with V2.6
+        OBX_21 = ""  # Reserved for harmonization with V2.6
+        OBX_22 = ""  # Reserved for harmonization with V2.6
+        OBX_23 = ""  # Performing Organization Name 
+        OBX_24 = ""  # Performing Organization Address 
+        OBX_25 = ""  # Performing Organization Medical Director 
+
+        # Concatenate all variables with pipe separator
+        OBX_body = "|".join([OBX_1, OBX_2, OBX_3, OBX_4, OBX_5, OBX_6, OBX_7, OBX_8, OBX_9, OBX_10,
+                            OBX_11, OBX_12, OBX_13, OBX_14, OBX_15, OBX_16, OBX_17, OBX_18, OBX_19])
+        OBX = f"OBX|{OBX_body}"
 
         ## SPM
         SPM = (
