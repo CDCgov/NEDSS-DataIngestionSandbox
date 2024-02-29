@@ -20,10 +20,10 @@ from datetime import datetime, timedelta, date
 numoELRs = int(sys.argv[1])
 conditionCode = str(sys.argv[2])
 
-host = 'cdc-nbs-alabama-rds-mssql.czya31goozkz.us-east-1.rds.amazonaws.com'
-user = 'admin'
-password = 'hW61W1Z5!xX1'
-database = 'NBS_MSGOUTE'
+host = ''
+user = ''
+password = ''
+database = ''
 
 connection_string = "DRIVER={ODBC Driver 17 for SQL Server};SERVER="+host+";DATABASE="+database+";UID="+user+";PWD="+password
 connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
