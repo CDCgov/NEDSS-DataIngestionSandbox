@@ -94,7 +94,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         patRace = re.sub("^[^_]* : ", "", race)
         patRaceCode = re.sub(" : [^_]*", "", race).lstrip()
 
-        # ----- Assigning Authority/Facility ------
+        # ----- Assigning Authority/Filler Facility ------
         assigning_authority = """select concat(eid.root_extension_txt, ' : ', o.display_nm)
                                 from nbs_odse..Organization o
                                 inner join nbs_odse..entity_id eid
@@ -148,6 +148,28 @@ def generateELR(numoELRs, conditionCode, output_folder):
         reasonTxt = re.sub("^[^_]* : ", "", reason)
         reasonCode = re.sub(" : [^_]*", "", reason).lstrip()
 
+        # ------------ Specimen Data -------------
+
+        specimenSql = "select concat (code, ' : ', code_desc_txt) from nbs_srte.dbo.code_value_general where code_set_nm = 'SPECMN_SRC' and code LIKE '%[a-z]%';"
+
+        df = pd.read_sql(specimenSql, engine)
+        specimen_random_row = df.sample(n=1)
+        specimen = specimen_random_row.to_string(index=False)
+
+        specimenTxt = re.sub("^[^_]* : ", "", specimen)
+        specimenCode = re.sub(" : [^_]*", "", specimen).lstrip()
+
+        AltspecimenSql = "select concat (code, ' : ', code_desc_txt) from nbs_srte.dbo.code_value_general where code_set_nm = 'SPECMN_SRC' and code LIKE '%[0-9]%';"
+
+        df = pd.read_sql(AltspecimenSql, engine)
+        alt_specimen_random_row = df.sample(n=1)
+        alt_specimen = alt_specimen_random_row.to_string(index=False)
+
+        AltspecimenTxt = re.sub("^[^_]* : ", "", alt_specimen)
+        AltspecimenCode = re.sub(" : [^_]*", "", alt_specimen).lstrip()
+
+        ### Notes: Still need to work on bringing the Speciment and Altername Specimen code to show for the same Text, currently putting 2 different values
+            ###|PUS^Pus^HL70487^258482009^Vesicle fluid sample ^SCT^2.5.1^Pus|
 
 
             # ------Segments (Funcitions) ------
@@ -522,9 +544,72 @@ def generateELR(numoELRs, conditionCode, output_folder):
         f"{pid11}|{pid12}|{pid13}|{pid14}|{pid15}|{pid16}|{pid17}|{pid18}|{pid19}|{pid31}|{pid33}|{pid34}|{pid35}")
         
         ## PV1
-        PV1 = (
-        f"PV1|"
-        )
+
+        # The PV1 segment is used by Registration/Patient Administration applications to communicate information on an account or visit-specific basis.
+        
+        # Creating values for PV1_2
+        PV1_2_values = {"B", "C", "E", "I", "O", "N", "P", "R", "U"}
+        PV1_2_choice = random.choice(list(PV1_2_values))
+
+        # Generating variables for PV1 Segemnt
+        pv1_1 = "" # PV1.1 - Set ID - PV1
+        pv1_2 = PV1_2_choice # PV1.2 - Patient Class ----- R
+        pv1_3 = "" # PV1.3 - Assigned Patient Location
+        pv1_4 = "" # PV1.4 - Admission Type
+        pv1_5 = "" # PV1.5 - Preadmit Number
+        pv1_6 = "" # PV1.6 - Prior Patient Location
+        pv1_7 = "" # PV1.7 - Attending Doctor
+        pv1_8 = "" # PV1.8 - Referring Doctor
+        pv1_9 = "" # PV1.9 - Consulting Doctor ----- B
+        pv1_10 = "" # PV1.10 - Hospital Service
+        pv1_11 = "" # PV1.11 - Temporary Location
+        pv1_12 = "" # PV1.12 - Preadmit Test Indicator
+        pv1_13 = "" # PV1.13 - Re-admission Indicator
+        pv1_14 = "" # PV1.14 - Admit Source
+        pv1_15 = "" # PV1.15 - Ambulatory Status
+        pv1_16 = "" # PV1.16 - VIP Indicator
+        pv1_17 = "" # PV1.17 - Admitting Doctor
+        pv1_18 = "" # PV1.18 - Patient Type
+        pv1_19 = "" # PV1.19 - Visit Number
+        pv1_20 = "" # PV1.20 - Financial Class
+        pv1_21 = "" # PV1.21 - Charge Price Indicator
+        pv1_22 = "" # PV1.22 - Courtesy Code
+        pv1_23 = "" # PV1.23 - Credit Rating
+        pv1_24 = "" # PV1.24 - Contract Code
+        pv1_25 = "" # PV1.25 - Contract Effective Date
+        pv1_26 = "" # PV1.26 - Contract Amount
+        pv1_27 = "" # PV1.27 - Contract Period
+        pv1_28 = "" # PV1.28 - Interest Code
+        pv1_29 = "" # PV1.29 - Transfer to Bad Debt Code
+        pv1_30 = "" # PV1.30 - Transfer to Bad Debt Date
+        pv1_31 = "" # PV1.31 - Bad Debt Agency Code
+        pv1_32 = "" # PV1.32 - Bad Debt Transfer Amount
+        pv1_33 = "" # PV1.33 - Bad Debt Recovery Amount
+        pv1_34 = "" # PV1.34 - Delete Account Indicator
+        pv1_35 = "" # PV1.35 - Delete Account Date
+        pv1_36 = "" # PV1.36 - Discharge Disposition
+        pv1_37 = "" # PV1.37 - Discharged to Location
+        pv1_38 = "" # PV1.38 - Diet Type
+        pv1_39 = "" # PV1.39 - Servicing Facility
+        pv1_40 = "" # PV1.40 - Bed Status ----- B
+        pv1_41 = "" # PV1.41 - Account Status
+        pv1_42 = "" # PV1.42 - Pending Location
+        pv1_43 = "" # PV1.43 - Prior Temporary Location
+        pv1_44 = "" # PV1.44 - Admit Date/Time
+        pv1_45 = "" # PV1.45 - Discharge Date/Time
+        pv1_46 = "" # PV1.46 - Current Patient Balance
+        pv1_47 = "" # PV1.47 - Total Charges
+        pv1_48 = "" # PV1.48 - Total Adjustments
+        pv1_49 = "" # PV1.49 - Total Payments
+        pv1_50 = "" # PV1.50 - Alternate Visit ID
+        pv1_51 = "" # PV1.51 - Visit Indicator
+        pv1_52 = "" # PV1.52 - Other Healthcare Provider ------ B
+
+        # Concatenate all variables with pipe separator
+        PV1_body = "|".join([pv1_1, pv1_2])
+
+        PV1 = f"PV1|{PV1_body}"
+        
 
         ## OBR - This segment is used to transmit information specific to an order for a diagnostic study or observation, physical exam, or assessment.
         obr1 = "1"  #OBR_1 - Set ID - OBR -- has to be incremental based on the Observations existing
@@ -533,14 +618,14 @@ def generateELR(numoELRs, conditionCode, output_folder):
         obr2_1 = numberrn # obr_2_1 - Entity Identifier
         obr2_2 = sending_facility_txt # obr_2_2 - Namespace Id 
         obr2_3 = sending_facility_id # obr_2_3 - Universal Id
-        obr2_4 = "CLIA" # obr_2_4 - Universal Id Type
+        obr2_4 = "" # obr_2_4 - Universal Id Type
         obr2 = (f"{obr2_1}^{obr2_2}^{obr2_3}^{obr2_4}") # obr_2 - Placer Order Number
         
         #obr_3 - Filler Order Number
         obr3_1 = numberrn # obr_3.1 - Entity Identifier
         obr3_2 = assigning_authority_txt # obr_3.2 - Namespace Id
         obr3_3 = assigning_authority_id # obr_3.3 - Universal Id
-        obr3_4 = "" # obr_3.4 - Universal Id Type
+        obr3_4 = "CLIA" # obr_3.4 - Universal Id Type
         obr3 = (f"{obr3_1}^{obr3_2}^{obr3_3}^{obr3_4}") # obr_2 - Placer Order Number
         
         #obr_4 - Universal Service Identifier
@@ -1208,18 +1293,319 @@ def generateELR(numoELRs, conditionCode, output_folder):
         )
 
         ## OBX
-        OBX = (
-        f"OBX|"
-        )
+        # The OBX segment is used to transmit a single observation or observation
+        # fragment. It represents the smallest indivisible unit of a report. 
 
-        ## SPM
-        SPM = (
-        f"SPM|"
-        )
+        # ------- Observation --------
+
+        # Creating variables for OBX segments
+        OBX_1 = "1"  # Set ID - OBX (Set ID)
+        OBX_2 = "NM"  # Value Type --- C
+        OBX3_1 = patDiseaseCode
+        OBX3_2 = patDisease
+        OBX3_3 = "LN"
+        OBX_3 = (f"{OBX3_1}^{OBX3_2}^{OBX3_3}")  # Observation Identifier --- R
+        OBX_4 = ""  # Observation Sub-ID --- C
+        OBX_5 = ""  # Observation Value --- C
+        OBX_6 = ""  # Units
+        OBX_7 = ""  # References Range
+        OBX_8 = ""  # Abnormal Flags
+        OBX_9 = ""  # Probability
+        OBX_10 = ""  # Nature of Abnormal Test
+        OBX_11 = random.choice(['R', 'F'])  # Observation Result Status ---- R
+        OBX_12 = ""  # Effective Date of Reference Range
+        OBX_13 = ""  # User Defined Access Checks
+        OBX_14 = ""  # Date/Time of the Observation
+        OBX_15 = ""  # Producer's ID
+        OBX_16 = ""  # Responsible Observer
+        OBX_17 = ""  # Observation Method
+        OBX_18 = ""  # Equipment Instance Identifier
+        OBX_19 = char_time  # Date/Time of the Analysis ----- R
+        OBX_20 = ""  # Reserved for harmonization with V2.6
+        OBX_21 = ""  # Reserved for harmonization with V2.6
+        OBX_22 = ""  # Reserved for harmonization with V2.6
+        OBX_23 = ""  # Performing Organization Name 
+        OBX_24 = ""  # Performing Organization Address 
+        OBX_25 = ""  # Performing Organization Medical Director 
+
+        # Concatenate all variables with pipe separator
+        OBX_body = "|".join([OBX_1, OBX_2, OBX_3, OBX_4, OBX_5, OBX_6, OBX_7, OBX_8, OBX_9, OBX_10,
+                            OBX_11, OBX_12, OBX_13, OBX_14, OBX_15, OBX_16, OBX_17, OBX_18, OBX_19])
+        
+        OBX = f"OBX|{OBX_body}"
+
+        ## SPM - 
+        # This segment is to describe the characteristics of a specimen and generalizes the multiple relationships among order(s), results, specimen(s) and specimen container(s).
+        
+        spm1 = "1" #spm_1 - Set ID - SPM
+        
+        spm_2_1_1 = str(random.randint(1000000, 9999999)) # spm_2.1.1 - Entity Identifier
+        spm_2_1_2 = sending_facility_txt # spm_2.1.2 - Namespace Id
+        spm_2_1_3 = sending_facility_id # spm_2.1.3 - Universal Id
+        spm_2_1_4 = "" # spm_2.1.4 - Universal Id Type
+        spm_2_1 = (f"{spm_2_1_1}&{spm_2_1_2}&{spm_2_1_3}&{spm_2_1_4}") #spm_2.1 - Placer Assigned Identifier
+        
+        spm_2_2_1 = str(random.randint(1000000, 9999999)) # spm_2.2.1 - Entity Identifier
+        spm_2_2_2 = assigning_authority_txt # spm_2.2.2 - Namespace Id
+        spm_2_2_3 = assigning_authority_id # spm_2.2.3 - Universal Id
+        spm_2_2_4 = "CLIA" # spm_2.2.4 - Universal Id Type
+        spm_2_2 = (f"{spm_2_2_1}&{spm_2_2_2}&{spm_2_2_3}&{spm_2_2_4}") #spm_2.2 - Filler Assigned Identifier
+        spm2 = (f"{spm_2_1}^{spm_2_2}") # spm_2 - Specimen ID
+
+        spm3 = "" #spm_3 - Specimen Parent IDs
+        #spm_3.1 - Placer Assigned Identifier
+        #spm_3.1.1 - Entity Identifier
+        #spm_3.1.2 - Namespace Id
+        #spm_3.1.3 - Universal Id
+        #spm_3.1.4 - Universal Id Type
+        #spm_3.2 - Filler Assigned Identifier
+        #spm_3.2.1 - Entity Identifier
+        #spm_3.2.2 - Namespace Id
+        #spm_3.2.3 - Universal Id
+        #spm_3.2.4 - Universal Id Type
+        
+        # spm_4 - Specimen Type
+        spm4_1 = specimenCode # spm_4.1 - Identifier
+        spm4_2 = specimenTxt # spm_4.2 - Text
+        spm4_3 = "HL70487" # spm_4.3 - Name Of Coding System
+        
+        # if 
+        #### Logic ####
+
+        ####    if code is an alphabet then code_system_cd = HL70487
+        ####        else:
+        ####            code_system_cd = SCT
+        ####
+        ####    specimen collection method --> code_short_desc_txt
+        
+        spm4_4 = AltspecimenCode #spm_4.4 - Alternate Identifier
+        spm4_5 = AltspecimenTxt #spm_4.5 - Alternate Text
+        spm4_6 = "SCT" #spm_4.6 - Name Of Alternate Coding System
+        spm4_7 = "2.5.1" # spm_4.7 - Coding System Version Id
+        #spm_4.8 - Alternate Coding System Version Id
+        spm4_9 = specimenTxt # spm_4.9 - Original Text
+        spm4 = (f"{spm4_1}^{spm4_2}^{spm4_3}^{spm4_4}^{spm4_5}^{spm4_6}^{spm4_7}^{spm4_9}") # spm_4 - Specimen Type
+
+        spm5 = "" #spm_5 - Specimen Type Modifier
+        #spm_5.1 - Identifier
+        #spm_5.2 - Text
+        #spm_5.3 - Name Of Coding System
+        #spm_5.4 - Alternate Identifier
+        #spm_5.5 - Alternate Text
+        #spm_5.6 - Name Of Alternate Coding System
+        #spm_5.7 - Coding System Version Id
+        #spm_5.8 - Alternate Coding System Version Id
+        #spm_5.9 - Original Text
+        
+        spm6 = "" #spm_6 - Specimen Additives
+        #spm_6.1 - Identifier
+        #spm_6.2 - Text
+        #spm_6.3 - Name Of Coding System
+        #spm_6.4 - Alternate Identifier
+        #spm_6.5 - Alternate Text
+        #spm_6.6 - Name Of Alternate Coding System
+        #spm_6.7 - Coding System Version Id
+        #spm_6.8 - Alternate Coding System Version Id
+        #spm_6.9 - Original Text
+        
+        # spm_7 - Specimen Collection Method
+        spm7_1 = AltspecimenCode # spm_7.1 - Identifier
+        spm7_2 = AltspecimenCode # spm_7.2 - Text
+        spm7_3 = "TG" # spm_7.3 - Name Of Coding System ---- (TG = Test Generator Data)
+        # spm_7.4 - Alternate Identifier
+        # spm_7.5 - Alternate Text
+        # spm_7.6 - Name Of Alternate Coding System
+        # spm_7.7 - Coding System Version Id
+        # spm_7.8 - Alternate Coding System Version Id
+        # spm_7.9 - Original Text
+        spm7 = (f"{spm7_1}^{spm7_2}^{spm7_3}") # spm_7 - Specimen Collection Method
+        
+        spm8 = "" # spm_8 - Specimen Source Site
+        # spm_8.1 - Identifier
+        # spm_8.2 - Text
+        # spm_8.3 - Name Of Coding System
+        # spm_8.4 - Alternate Identifier
+        # spm_8.5 - Alternate Text
+        # spm_8.6 - Name Of Alternate Coding System
+        # spm_8.7 - Coding System Version Id
+        # spm_8.8 - Alternate Coding System Version Id
+        # spm_8.9 - Original Text
+        
+        spm9 = "" # spm_9 - Specimen Source Site Modifier
+        # spm_9.1 - Identifier
+        # spm_9.2 - Text
+        # spm_9.3 - Name Of Coding System
+        # spm_9.4 - Alternate Identifier
+        # spm_9.5 - Alternate Text
+        # spm_9.6 - Name Of Alternate Coding System
+        # spm_9.7 - Coding System Version Id
+        # spm_9.8 - Alternate Coding System Version Id
+        # spm_9.9 - Original Text
+        
+        spm10 = "" #spm_10 - Specimen Collection Site
+        #spm_10.1 - Identifier
+        #spm_10.2 - Text
+        #spm_10.3 - Name Of Coding System
+        #spm_10.4 - Alternate Identifier
+        #spm_10.5 - Alternate Text
+        #spm_10.6 - Name Of Alternate Coding System
+        #spm_10.7 - Coding System Version Id
+        #spm_10.8 - Alternate Coding System Version Id
+        #spm_10.9 - Original Text
+        
+        spm11 = "" # spm_11 - Specimen Role
+        # spm_11.1 - Identifier
+        # spm_11.2 - Text
+        # spm_11.3 - Name Of Coding System
+        # spm_11.4 - Alternate Identifier
+        # spm_11.5 - Alternate Text
+        # spm_11.6 - Name Of Alternate Coding System
+        # spm_11.7 - Coding System Version Id
+        # spm_11.8 - Alternate Coding System Version Id
+        # spm_11.9 - Original Text
+        
+        # spm_12 - Specimen Collection Amount
+        spm12_1 = numberrn # spm_12.1 - Quantity
+        spm12_2 = "ML"# spm_12.2 - Units
+        # spm_12.2.1 - Identifier
+        # spm_12.2.2 - Text
+        # spm_12.2.3 - Name Of Coding System
+        # spm_12.2.4 - Alternate Identifier
+        # spm_12.2.5 - Alternate Text
+        # spm_12.2.6 - Name Of Alternate Coding System
+        spm12 = (f"{spm12_1}^{spm12_2}")
+        
+        spm13 = "" #spm_13 - Grouped Specimen Count
+        spm14 = "" #spm_14 - Specimen Description
+
+        spm15 = "" #spm_15 - Specimen Handling Code
+        #spm_15.1 - Identifier
+        #spm_15.2 - Text
+        #spm_15.3 - Name Of Coding System
+        #spm_15.4 - Alternate Identifier
+        #spm_15.5 - Alternate Text
+        #spm_15.6 - Name Of Alternate Coding System
+        #spm_15.7 - Coding System Version Id
+        #spm_15.8 - Alternate Coding System Version Id
+        #spm_15.9 - Original Text
+        spm16 = "" #spm_16 - Specimen Risk Code
+        #spm_16.1 - Identifier
+        #spm_16.2 - Text
+        #spm_16.3 - Name Of Coding System
+        #spm_16.4 - Alternate Identifier
+        #spm_16.5 - Alternate Text
+        #spm_16.6 - Name Of Alternate Coding System
+        #spm_16.7 - Coding System Version Id
+        #spm_16.8 - Alternate Coding System Version Id
+        #spm_16.9 - Original Text
+        
+        # spm_17 - Specimen Collection Date/Time
+        spm17_1 = char_time # spm_17.1 - Range Start Date/Time
+        #spm_17.1.1 - Time
+        #spm_17.1.2 - Degree Of Precision
+        spm17_2 = char_time # spm_17.2 - Range End Date/Time
+        #spm_17.2.1 - Time
+        #spm_17.2.2 - Degree Of Precision
+        spm17 = (f"{spm17_1}^{spm17_2}") # spm_17 - Specimen Collection Date/Time
+        
+        spm18 = char_time # spm_18 - Specimen Received Date/Time
+                
+        spm19 = "" #spm_19 - Specimen Expiration Date/Time
+        #spm_19.1 - Time
+        #spm_19.2 - Degree Of Precision
+        spm20 = "" #spm_20 - Specimen Availability
+        
+        spm21 = "" # spm_21 - Specimen Reject Reason
+        # spm_21.1 - Identifier
+        # spm_21.2 - Text
+        # spm_21.3 - Name Of Coding System
+        # spm_21.4 - Alternate Identifier
+        # spm_21.5 - Alternate Text
+        # spm_21.6 - Name Of Alternate Coding System
+        # spm_21.7 - Coding System Version Id
+        # spm_21.8 - Alternate Coding System Version Id
+        # spm_21.9 - Original Text
+        
+        #spm_22 - Specimen Quality
+        #spm_22.1 - Identifier
+        #spm_22.2 - Text
+        #spm_22.3 - Name Of Coding System
+        #spm_22.4 - Alternate Identifier
+        #spm_22.5 - Alternate Text
+        #spm_22.6 - Name Of Alternate Coding System
+        #spm_22.7 - Coding System Version Id
+        #spm_22.8 - Alternate Coding System Version Id
+        #spm_22.9 - Original Text
+        #spm_23 - Specimen Appropriateness
+        #spm_23.1 - Identifier
+        #spm_23.2 - Text
+        #spm_23.3 - Name Of Coding System
+        #spm_23.4 - Alternate Identifier
+        #spm_23.5 - Alternate Text
+        #spm_23.6 - Name Of Alternate Coding System
+        #spm_23.7 - Coding System Version Id
+        #spm_23.8 - Alternate Coding System Version Id
+        #spm_23.9 - Original Text
+        #spm_24 - Specimen Condition
+        #spm_24.1 - Identifier
+        #spm_24.2 - Text
+        #spm_24.3 - Name Of Coding System
+        #spm_24.4 - Alternate Identifier
+        #spm_24.5 - Alternate Text
+        #spm_24.6 - Name Of Alternate Coding System
+        #spm_24.7 - Coding System Version Id
+        #spm_24.8 - Alternate Coding System Version Id
+        #spm_24.9 - Original Text
+        #spm_25 - Specimen Current Quantity
+        #spm_25.1 - Quantity
+        #spm_25.2 - Units
+        #spm_25.2.1 - Identifier
+        #spm_25.2.2 - Text
+        #spm_25.2.3 - Name Of Coding System
+        #spm_25.2.4 - Alternate Identifier
+        #spm_25.2.5 - Alternate Text
+        #spm_25.2.6 - Name Of Alternate Coding System
+        #spm_26 - Number of Specimen Containers
+        #spm_27 - Container Type
+        #spm_27.1 - Identifier
+        #spm_27.2 - Text
+        #spm_27.3 - Name Of Coding System
+        #spm_27.4 - Alternate Identifier
+        #spm_27.5 - Alternate Text
+        #spm_27.6 - Name Of Alternate Coding System
+        #spm_27.7 - Coding System Version Id
+        #spm_27.8 - Alternate Coding System Version Id
+        #spm_27.9 - Original Text
+        #spm_28 - Container Condition
+        #spm_28.1 - Identifier
+        #spm_28.2 - Text
+        #spm_28.3 - Name Of Coding System
+        #spm_28.4 - Alternate Identifier
+        #spm_28.5 - Alternate Text
+        #spm_28.6 - Name Of Alternate Coding System
+        #spm_28.7 - Coding System Version Id
+        #spm_28.8 - Alternate Coding System Version Id
+        #spm_28.9 - Original Text
+        #spm_29 - Specimen Child Role
+        #spm_29.1 - Identifier
+        #spm_29.2 - Text
+        #spm_29.3 - Name Of Coding System
+        #spm_29.4 - Alternate Identifier
+        #spm_29.5 - Alternate Text
+        #spm_29.6 - Name Of Alternate Coding System
+        #spm_29.7 - Coding System Version Id
+        #spm_29.8 - Alternate Coding System Version Id
+        #spm_29.9 - Original Text
+
+        # Concatenate all variables with pipe separator
+        SPM_body = "|".join([spm1, spm2, spm3, spm4, spm5, spm6, spm7, spm8, spm9, spm10,
+                            spm11, spm12, spm13, spm14, spm15, spm16, spm17, spm18, spm19, spm20, spm21])
+        
+        SPM = f"SPM|{SPM_body}"
 
         
 
-        # PID variable is being returned here
+        # All segments are arranged here
         HL7 = (f"{MSH}"
             f"\n{PID}"
             f"\n{PV1}"
