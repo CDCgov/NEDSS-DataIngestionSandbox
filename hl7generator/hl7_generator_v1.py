@@ -179,8 +179,8 @@ def generateELR(numoELRs, conditionCode, output_folder):
             # the date and time that the message was created. 
             # This segment is required.
 
-        msh1 = "|" # MSH.1 - Field Separator -- R
-        msh2 = "^~\&amp;" # MSH.2 - Encoding Characters -- R
+        msh1 = "" # MSH.1 - Field Separator -- R
+        msh2 = "^~\&" # MSH.2 - Encoding Characters -- R
         
         msh3_1 = "HL7 Generator" # MSH.3.1 - Namespace Id ---- Sending Application
         msh3_2 = "" # MSH.3.2 - Universal Id
@@ -202,7 +202,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         msh6_3 = "ISO" # MSH.6.3 - Universal Id Type
         msh6 = (f"{msh6_1}^{msh6_2}^{msh6_3}")
         
-        msh7 = formatted_time # MSH.7.1 - Time ---- R
+        msh7 = char_time # MSH.7.1 - Time ---- R
         #msh7_2 = "" # MSH.7.2 - Degree Of Precision
         
         msh8 = "" # MSH.8 - Security 
@@ -245,7 +245,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
 
         MSH = (
         f"MSH|"
-        f"{msh1}|{msh2}|{msh3}|{msh4}|{msh5}|{msh6}|{msh7}|{msh8}|{msh9}|{msh10}|{msh11}|{msh12}")
+        f"{msh2}|{msh3}|{msh4}|{msh5}|{msh6}|{msh7}|{msh8}|{msh9}|{msh10}|{msh11}|{msh12}")
 
         #This segment is used by all applications as the primary means of communicating patient identification information.
         #This segment contains permanent patient identifying and demographic information that, for the most part, is not likely to change frequently.
@@ -546,10 +546,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         ## PV1
 
         # The PV1 segment is used by Registration/Patient Administration applications to communicate information on an account or visit-specific basis.
-
-        # The PV1 segment is used by Registration/Patient Administration 
-        # applications to communicate information on an account or visit-specific basis.
-       
+        
         # Creating values for PV1_2
         PV1_2_values = {"B", "C", "E", "I", "O", "N", "P", "R", "U"}
         PV1_2_choice = random.choice(list(PV1_2_values))
@@ -612,7 +609,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         PV1_body = "|".join([pv1_1, pv1_2])
 
         PV1 = f"PV1|{PV1_body}"
-
+        
 
         ## OBR - This segment is used to transmit information specific to an order for a diagnostic study or observation, physical exam, or assessment.
         obr1 = "1"  #OBR_1 - Set ID - OBR -- has to be incremental based on the Observations existing
@@ -1296,47 +1293,8 @@ def generateELR(numoELRs, conditionCode, output_folder):
         )
 
         ## OBX
-        
         # The OBX segment is used to transmit a single observation or observation
         # fragment. It represents the smallest indivisible unit of a report. 
-
-        # The OBX segment is used to transmit a single observation or observation
-        # fragment. It represents the smallest indivisible unit of a report. 
-        
-        # ------- Observation --------
-
-        # Creating variables for OBX segments
-        OBX_1 = "1"  # Set ID - OBX (Set ID)
-        OBX_2 = "NM"  # Value Type --- C
-        OBX_3 = "{patDiseaseCode}^{patDisease}^LN"  # Observation Identifier --- R
-        OBX_4 = ""  # Observation Sub-ID --- C
-        OBX_5 = ""  # Observation Value --- C
-        OBX_6 = ""  # Units
-        OBX_7 = ""  # References Range
-        OBX_8 = ""  # Abnormal Flags
-        OBX_9 = ""  # Probability
-        OBX_10 = ""  # Nature of Abnormal Test
-        OBX_11 = random.choice(['R', 'F'])  # Observation Result Status ---- R
-        OBX_12 = ""  # Effective Date of Reference Range
-        OBX_13 = ""  # User Defined Access Checks
-        OBX_14 = ""  # Date/Time of the Observation
-        OBX_15 = ""  # Producer's ID
-        OBX_16 = ""  # Responsible Observer
-        OBX_17 = ""  # Observation Method
-        OBX_18 = ""  # Equipment Instance Identifier
-        OBX_19 = char_time  # Date/Time of the Analysis ----- R
-        OBX_20 = ""  # Reserved for harmonization with V2.6
-        OBX_21 = ""  # Reserved for harmonization with V2.6
-        OBX_22 = ""  # Reserved for harmonization with V2.6
-        OBX_23 = ""  # Performing Organization Name 
-        OBX_24 = ""  # Performing Organization Address 
-        OBX_25 = ""  # Performing Organization Medical Director 
-
-        # Concatenate all variables with pipe separator
-        OBX_body = "|".join([OBX_1, OBX_2, OBX_3, OBX_4, OBX_5, OBX_6, OBX_7, OBX_8, OBX_9, OBX_10,
-                            OBX_11, OBX_12, OBX_13, OBX_14, OBX_15, OBX_16, OBX_17, OBX_18, OBX_19])
-        OBX = f"OBX|{OBX_body}"
-
 
         # ------- Observation --------
 
