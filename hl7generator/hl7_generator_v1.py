@@ -1,25 +1,27 @@
 import pyodbc
 import pandas as pd
 import sqlalchemy as sa
-from sqlalchemy.engine import URL
-from sqlalchemy.sql import text
 import re
 import sys
 import os
-from faker import Faker
 import random
-from decouple import config
+from faker import Faker
+from sqlalchemy.engine import URL
+from sqlalchemy.sql import text
+from sqlalchemy import create_engine
+#from decouple import config
 from datetime import datetime, timedelta, date
 
     #if __name__ == "__main__":
     #    numoELRs = int(sys.argv[1])
     #    conditionCode = str(sys.argv[2])
-    #
     #    print ("Generating HL7messages for Disease code:", format(conditionCode))
 
-numoELRs = int(sys.argv[1])
-conditionCode = str(sys.argv[2])
 
+#numoELRs = int(sys.argv[1])
+#conditionCode = str(sys.argv[2])
+
+# Creating a connection with the database
 host = ''
 user = ''
 password = ''
@@ -27,14 +29,11 @@ database = ''
 
 connection_string = "DRIVER={ODBC Driver 17 for SQL Server};SERVER="+host+";DATABASE="+database+";UID="+user+";PWD="+password
 connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
-from sqlalchemy import create_engine
 engine = create_engine(connection_url)
 
 def generateELR(numoELRs, conditionCode, output_folder):
-    # Generating values for PID fields and sub-fields
     os.makedirs(output_folder, exist_ok=True)
-    for i in range(int(numoELRs)):
-        #if conditionCode== '10101':
+    for i in range(int(numoELRs)):        
         
         curr_time = datetime.now()
         #print("Starttime", start_time)
@@ -53,8 +52,6 @@ def generateELR(numoELRs, conditionCode, output_folder):
         prefix = ["Dr", "Mr", "Ms", "Mrs"]
         degree = ["APRN", "CRNP", "NP", "PA"]
         docDegree = ["MD", "DO"]
-
-        dob = fake.date_of_birth()
         sex = ["M", "F", "O", "U"]
         patSex = random.choice(sex)
         mails= ['gmail.com', 'hotmail.com', 'yahoo.com', 'icloud.com']
@@ -62,6 +59,23 @@ def generateELR(numoELRs, conditionCode, output_folder):
         email = firstname + lastname + numberrn + "@" + random.choice(mails)
         phone = fake.phone_number()
         ssn = fake.ssn()
+
+        # Creating a function to generate a fake birthday in the format: YYYY[MM[DD[HH[MM[SS[.S[S[S[S]]]]]]]]][+/-ZZZZ]
+        def generate_random_birthday():
+            # Generate random date of birth using Faker
+            dob = fake.date_of_birth(minimum_age=0, maximum_age=100)
+            formatted_dob = dob.strftime("%Y%m%d%H%M%S")
+            formatted_dob += f".{random.randint(0, 9999):04d}"
+            timezone_offset_sign = random.choice(['+', '-'])
+            timezone_offset_hours = random.randint(0, 12)
+            timezone_offset_minutes = random.randint(0, 59)
+            timezone_offset = f"{timezone_offset_sign}{timezone_offset_hours:02d}{timezone_offset_minutes:02d}"
+
+            formatted_dob += timezone_offset
+            
+            return formatted_dob
+        
+        dob = generate_random_birthday()
 
         # Generating Address using Faker
         address = fake.street_address()
@@ -72,14 +86,29 @@ def generateELR(numoELRs, conditionCode, output_folder):
         country = fake.country()
         #county = fake.county()
 
-        # Lab Report
+        # -------- Lab Report -----------
+        
+        # ---- Time ----
+        # Generate HL7 datetime
         time = datetime.now()
+        char_time = time.strftime("%Y%m%d%H%M%S")
+        timezone_offset = random.randint(-1200, 1200)
+        sign = "-" if timezone_offset < 0 else "+"
+        hl7_datetime = f"{char_time}.{random.randint(0, 999):03d}{sign}{abs(timezone_offset):04d}"
+
+        original_date = datetime.strptime(hl7_datetime[:14], "%Y%m%d%H%M%S")
+
+        # Add 5 days to the original datetime
+        future_date = original_date + timedelta(days=5)
+        future_char_time = future_date.strftime("%Y%m%d%H%M%S")
+        future_timezone_offset = random.randint(-1200, 1200)
+        future_sign = "-" if future_timezone_offset < 0 else "+"
+        future_time_hl7_datetime = f"{future_char_time}.{random.randint(0, 999):03d}{future_sign}{abs(future_timezone_offset):04d}"
+
         
         add_time = time + timedelta(days=10)
-
         formatted_time = time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         char_time = time.strftime("%Y%m%d%H%M%S")[:-3]
-
         future_time = add_time.strftime("%Y%m%d%H%M%S")[:-3]
 
         resultStatus = ["A", "D", "I", "L", "N", "P", "S", "T", "U", "W", "X", ]
@@ -172,12 +201,14 @@ def generateELR(numoELRs, conditionCode, output_folder):
             ###|PUS^Pus^HL70487^258482009^Vesicle fluid sample ^SCT^2.5.1^Pus|
 
 
-            # ------Segments (Funcitions) ------
+        # ------ Creating Segments and Fields ------
 
-            # Message Header. This segment is a mandatory part of an ORU message, 
-            # and contains information about the message sender and receiver, 
-            # the date and time that the message was created. 
-            # This segment is required.
+
+        # ----- MSH ---------
+        # Message Header. This segment is a mandatory part of an ORU message, 
+        # and contains information about the message sender and receiver, 
+        # the date and time that the message was created. 
+        # This segment is required.
 
         msh1 = "" # MSH.1 - Field Separator -- R
         msh2 = "^~\&" # MSH.2 - Encoding Characters -- R
@@ -202,7 +233,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         msh6_3 = "ISO" # MSH.6.3 - Universal Id Type
         msh6 = (f"{msh6_1}^{msh6_2}^{msh6_3}")
         
-        msh7 = char_time # MSH.7.1 - Time ---- R
+        msh7 = hl7_datetime # MSH.7.1 - Time ---- R
         #msh7_2 = "" # MSH.7.2 - Degree Of Precision
         
         msh8 = "" # MSH.8 - Security 
@@ -543,7 +574,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         f"{pid1}|{pid2}|{pid3}|{pid4}|{pid5}|{pid6}|{pid7}|{pid8}|{pid9}|{pid10}|"
         f"{pid11}|{pid12}|{pid13}|{pid14}|{pid15}|{pid16}|{pid17}|{pid18}|{pid19}|{pid31}|{pid33}|{pid34}|{pid35}")
         
-        ## PV1
+        #-------- PV1 ------------
 
         # The PV1 segment is used by Registration/Patient Administration applications to communicate information on an account or visit-specific basis.
         
@@ -642,9 +673,9 @@ def generateELR(numoELRs, conditionCode, output_folder):
         #obr_6.1 - Time
         #obr_6.2 - Degree Of Precision
         
-        obr7 = char_time # obr_7 - Observation Date/Time
+        obr7 = hl7_datetime # obr_7 - Observation Date/Time
         
-        obr8 = future_time # obr_8 - Observation End Date/Time
+        obr8 = future_time_hl7_datetime # obr_8 - Observation End Date/Time
         
         obr9 = "" #obr_9 - Collection Volume
         #obr_9.1 - Quantity
@@ -731,7 +762,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         
         obr13 = "" #obr_13 - Relevant Clinical Information
         
-        obr14 = char_time # obr_14 - Specimen Received Date/Time
+        obr14 = hl7_datetime # obr_14 - Specimen Received Date/Time
         
         obr15 = "" #obr_15 - Specimen Source
         #obr_15.1 - Specimen Source Name Or Code
@@ -890,7 +921,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         obr20 = "" #obr_20 - Filler Field 1
         obr21 = "" #obr_21 - Filler Field 2
         
-        obr22 = future_time # obr_22 - Results Rpt/Status Chng - Date/Time
+        obr22 = future_time_hl7_datetime # obr_22 - Results Rpt/Status Chng - Date/Time
         #obr_22.1 - Time
         #obr_22.1 - Degree Of Precision
         
@@ -1085,10 +1116,10 @@ def generateELR(numoELRs, conditionCode, output_folder):
         #obr_32.1.11 - Assigning Authority - Universal Id Type
         obr32_1 = (f"{obr32_1_1}^{obr32_1_2}^{obr32_1_3}^{obr32_1_5}^{obr32_1_6}^{obr32_1_7}") # obr_32.1 - Name
         
-        obr32_2 = char_time # obr_32.2 - Start Date/Time
+        obr32_2 = hl7_datetime # obr_32.2 - Start Date/Time
         #obr_32.2.1 - Time
         #obr_32.2.2 - Degree Of Precision
-        obr32_3 = char_time # obr_32.3 - End Date/Time
+        obr32_3 = future_time_hl7_datetime # obr_32.3 - End Date/Time
         #obr_32.3.1 - Time
         #obr_32.3.2 - Degree Of Precision
         #obr_32.4 - Point Of Care
@@ -1287,8 +1318,8 @@ def generateELR(numoELRs, conditionCode, output_folder):
 
         OBR = (
         f"OBR|"
-        f"{obr1}|{obr2}|{obr3}|{obr4}|{obr5}|{obr6}|{obr7}|{obr8}|{obr9}|{obr10}"
-        f"{obr11}|{obr12}|{obr13}|{obr14}|{obr15}|{obr16}|{obr17}|{obr18}|{obr19}|{obr20}"
+        f"{obr1}|{obr2}|{obr3}|{obr4}|{obr5}|{obr6}|{obr7}|{obr8}|{obr9}|{obr10}|"
+        f"{obr11}|{obr12}|{obr13}|{obr14}|{obr15}|{obr16}|{obr17}|{obr18}|{obr19}|{obr20}|"
         f"{obr21}|{obr22}|{obr23}|{obr24}|{obr25}|{obr26}|{obr27}|{obr28}|{obr29}|{obr30}|{obr31}|{obr32}"
         )
 
@@ -1320,7 +1351,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         OBX_16 = ""  # Responsible Observer
         OBX_17 = ""  # Observation Method
         OBX_18 = ""  # Equipment Instance Identifier
-        OBX_19 = char_time  # Date/Time of the Analysis ----- R
+        OBX_19 = hl7_datetime  # Date/Time of the Analysis ----- R
         OBX_20 = ""  # Reserved for harmonization with V2.6
         OBX_21 = ""  # Reserved for harmonization with V2.6
         OBX_22 = ""  # Reserved for harmonization with V2.6
@@ -1500,15 +1531,15 @@ def generateELR(numoELRs, conditionCode, output_folder):
         #spm_16.9 - Original Text
         
         # spm_17 - Specimen Collection Date/Time
-        spm17_1 = char_time # spm_17.1 - Range Start Date/Time
+        spm17_1 = hl7_datetime # spm_17.1 - Range Start Date/Time
         #spm_17.1.1 - Time
         #spm_17.1.2 - Degree Of Precision
-        spm17_2 = char_time # spm_17.2 - Range End Date/Time
+        spm17_2 = future_time_hl7_datetime # spm_17.2 - Range End Date/Time
         #spm_17.2.1 - Time
         #spm_17.2.2 - Degree Of Precision
         spm17 = (f"{spm17_1}^{spm17_2}") # spm_17 - Specimen Collection Date/Time
         
-        spm18 = char_time # spm_18 - Specimen Received Date/Time
+        spm18 = hl7_datetime # spm_18 - Specimen Received Date/Time
                 
         spm19 = "" #spm_19 - Specimen Expiration Date/Time
         #spm_19.1 - Time
@@ -1627,4 +1658,4 @@ def generateELR(numoELRs, conditionCode, output_folder):
             text_file.write(HL7)
 
 
-generateELR(numoELRs, conditionCode, "/Users/SubbaReddyAlla/Documents/WORK/HL7-Generation/ELR_Generator_File_Drop")
+generateELR(1, 10020, "/Users/SnehaaHari/Desktop/Drop")
