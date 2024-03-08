@@ -61,21 +61,22 @@ def generateELR(numoELRs, conditionCode, output_folder):
         ssn = fake.ssn()
 
         # Creating a function to generate a fake birthday in the format: YYYY[MM[DD[HH[MM[SS[.S[S[S[S]]]]]]]]][+/-ZZZZ]
-        def generate_random_birthday():
+       # def generate_random_birthday():
             # Generate random date of birth using Faker
-            dob = fake.date_of_birth(minimum_age=0, maximum_age=100)
-            formatted_dob = dob.strftime("%Y%m%d%H%M%S")
-            formatted_dob += f".{random.randint(0, 9999):04d}"
-            timezone_offset_sign = random.choice(['+', '-'])
-            timezone_offset_hours = random.randint(0, 12)
-            timezone_offset_minutes = random.randint(0, 59)
-            timezone_offset = f"{timezone_offset_sign}{timezone_offset_hours:02d}{timezone_offset_minutes:02d}"
+         #   dob = fake.date_of_birth(minimum_age=0, maximum_age=100)
+         #   formatted_dob = dob.strftime("%Y%m%d%H%M%S")
+         #   formatted_dob += f".{random.randint(0, 9999):04d}"
+         #   timezone_offset_sign = random.choice(['+', '-'])
+         #   timezone_offset_hours = random.randint(0, 12)
+         #   timezone_offset_minutes = random.randint(0, 59)
+         #   timezone_offset = f"{timezone_offset_sign}{timezone_offset_hours:02d}{timezone_offset_minutes:02d}"
 
-            formatted_dob += timezone_offset
+         #   formatted_dob += timezone_offset
             
-            return formatted_dob
+         #   return formatted_dob
         
-        dob = generate_random_birthday()
+        dob_rn = fake.date_of_birth(minimum_age=0, maximum_age=100)
+        dob = dob_rn.strftime("%Y%m%d%H%M")
 
         # Generating Address using Faker
         address = fake.street_address()
@@ -91,25 +92,25 @@ def generateELR(numoELRs, conditionCode, output_folder):
         # ---- Time ----
         # Generate HL7 datetime
         time = datetime.now()
-        char_time = time.strftime("%Y%m%d%H%M%S")
-        timezone_offset = random.randint(-1200, 1200)
-        sign = "-" if timezone_offset < 0 else "+"
-        hl7_datetime = f"{char_time}.{random.randint(0, 999):03d}{sign}{abs(timezone_offset):04d}"
-
-        original_date = datetime.strptime(hl7_datetime[:14], "%Y%m%d%H%M%S")
+        char_time = time.strftime("%Y%m%d%H%M")
+        #timezone_offset = random.randint(-1200, 1200)
+        #sign = "-" if timezone_offset < 0 else "+"
+        #hl7_datetime = f"{char_time}.{random.randint(0, 999):03d}{sign}{abs(timezone_offset):04d}"
+        hl7_datetime = char_time
+        original_date = datetime.strptime(hl7_datetime[:14], "%Y%m%d%H%M")
 
         # Add 5 days to the original datetime
         future_date = original_date + timedelta(days=5)
-        future_char_time = future_date.strftime("%Y%m%d%H%M%S")
-        future_timezone_offset = random.randint(-1200, 1200)
-        future_sign = "-" if future_timezone_offset < 0 else "+"
-        future_time_hl7_datetime = f"{future_char_time}.{random.randint(0, 999):03d}{future_sign}{abs(future_timezone_offset):04d}"
-
+        future_char_time = future_date.strftime("%Y%m%d%H%M")
+        #future_timezone_offset = random.randint(-1200, 1200)
+        #future_sign = "-" if future_timezone_offset < 0 else "+"
+        #future_time_hl7_datetime = f"{future_char_time}.{random.randint(0, 999):03d}{future_sign}{abs(future_timezone_offset):04d}"
+        future_time_hl7_datetime = future_char_time
         
-        add_time = time + timedelta(days=10)
-        formatted_time = time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-        char_time = time.strftime("%Y%m%d%H%M%S")[:-3]
-        future_time = add_time.strftime("%Y%m%d%H%M%S")[:-3]
+        #add_time = time + timedelta(days=10)
+        #formatted_time = time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        #char_time = time.strftime("%Y%m%d%H%M%S")[:-3]
+        #future_time = add_time.strftime("%Y%m%d%H%M%S")[:-3]
 
         resultStatus = ["A", "D", "I", "L", "N", "P", "S", "T", "U", "W", "X", ]
 
@@ -243,7 +244,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         msh9_3 = 'ORU_R01' # MSH.9.3 - Message Structure ---- R
         msh9 = (f"{msh9_1}^{msh9_2}^{msh9_3}")
         
-        msh10 = (f"{char_time}{numberrn}") # MSH.10 - Message Control ID ---- R
+        msh10 = (f"{hl7_datetime}{numberrn}") # MSH.10 - Message Control ID ---- R
         
         msh11_1 = "P" # MSH.11.1 - Processing Id ---- R
         msh11_2 = "T" # MSH.11.2 - Processing Mode ---- R
@@ -1101,7 +1102,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         obr32_1_1 = str(random.randint(10000, 99999)) # obr_32.1.1 - Id Number
         obr32_1_2 = lastname # obr_32.1.2 - Family Name
         obr32_1_3 = firstname # obr_32.1.3 - Given Name
-        #obr_32.1.4 - Second And Further Given Names Or Initials Thereof
+        obr32_1_4 = "" #obr_32.1.4 - Second And Further Given Names Or Initials Thereof
         obr32_1_5 = random.choice(suffix) # obr_32.1.5 - Suffix
         obr32_1_6 = random.choice(prefix) #obr_32.1.6 - Prefix (e.g., Dr)
         if obr32_1_6 == "Dr":
@@ -1114,7 +1115,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         #obr_32.1.9 - Assigning Authority - Namespace Id
         #obr_32.1.10 - Assigning Authority- Universal Id
         #obr_32.1.11 - Assigning Authority - Universal Id Type
-        obr32_1 = (f"{obr32_1_1}^{obr32_1_2}^{obr32_1_3}^{obr32_1_5}^{obr32_1_6}^{obr32_1_7}") # obr_32.1 - Name
+        obr32_1 = (f"{obr32_1_1}&{obr32_1_2}&{obr32_1_3}&{obr32_1_4}&{obr32_1_5}&{obr32_1_6}&{obr32_1_7}") # obr_32.1 - Name
         
         obr32_2 = hl7_datetime # obr_32.2 - Start Date/Time
         #obr_32.2.1 - Time
@@ -1343,7 +1344,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         OBX_8 = ""  # Abnormal Flags
         OBX_9 = ""  # Probability
         OBX_10 = ""  # Nature of Abnormal Test
-        OBX_11 = random.choice(['R', 'F'])  # Observation Result Status ---- R
+        OBX_11 = random.choice(['A'])  # Observation Result Status ---- R
         OBX_12 = ""  # Effective Date of Reference Range
         OBX_13 = ""  # User Defined Access Checks
         OBX_14 = ""  # Date/Time of the Observation
@@ -1633,7 +1634,6 @@ def generateELR(numoELRs, conditionCode, output_folder):
                             spm11, spm12, spm13, spm14, spm15, spm16, spm17, spm18, spm19, spm20, spm21])
         
         SPM = f"SPM|{SPM_body}"
-
         
 
         # All segments are arranged here
@@ -1653,7 +1653,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         #print("Endtime", End_time)
         
         # Create a separate text file for each message
-        file_name = os.path.join(output_folder, f"{firstname}_{lastname}_{patDiseaseCode}_{curr_date}.txt")
+        file_name = os.path.join(output_folder, f"DTS1_{firstname}_{lastname}_{patDiseaseCode}_{curr_date}.txt")
         with open(file_name, 'w') as text_file:
             text_file.write(HL7)
 
