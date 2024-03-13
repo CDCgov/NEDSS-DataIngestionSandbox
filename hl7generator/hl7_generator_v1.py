@@ -1,16 +1,14 @@
+import re
+import os
+import sys
+from datetime import datetime, timedelta, date
 import pyodbc
 import pandas as pd
-import sqlalchemy as sa
-import re
-import sys
-import os
 import random
 from faker import Faker
 from sqlalchemy.engine import URL
-from sqlalchemy.sql import text
 from sqlalchemy import create_engine
-#from decouple import config
-from datetime import datetime, timedelta, date
+from dbConnection import *
 
     #if __name__ == "__main__":
     #    numoELRs = int(sys.argv[1])
@@ -20,12 +18,6 @@ from datetime import datetime, timedelta, date
 
 #numoELRs = int(sys.argv[1])
 #conditionCode = str(sys.argv[2])
-
-# Creating a connection with the database
-host = ''
-user = ''
-password = ''
-database = ''
 
 connection_string = "DRIVER={ODBC Driver 17 for SQL Server};SERVER="+host+";DATABASE="+database+";UID="+user+";PWD="+password
 connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
@@ -112,7 +104,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         #char_time = time.strftime("%Y%m%d%H%M%S")[:-3]
         #future_time = add_time.strftime("%Y%m%d%H%M%S")[:-3]
 
-        resultStatus = ["A", "D", "I", "L", "N", "P", "S", "T", "U", "W", "X", ]
+        resultStatus = ["C", "F", "R"]
 
         # ---- Patient Race -----        
         racesql = """select concat (code, ' : ', code_desc_txt) from nbs_srte.dbo.Race_code;"""
@@ -1344,7 +1336,7 @@ def generateELR(numoELRs, conditionCode, output_folder):
         OBX_8 = ""  # Abnormal Flags
         OBX_9 = ""  # Probability
         OBX_10 = ""  # Nature of Abnormal Test
-        OBX_11 = random.choice(['A'])  # Observation Result Status ---- R
+        OBX_11 = random.choice(resultStatus)  # Observation Result Status ---- R
         OBX_12 = ""  # Effective Date of Reference Range
         OBX_13 = ""  # User Defined Access Checks
         OBX_14 = ""  # Date/Time of the Observation
@@ -1653,9 +1645,9 @@ def generateELR(numoELRs, conditionCode, output_folder):
         #print("Endtime", End_time)
         
         # Create a separate text file for each message
-        file_name = os.path.join(output_folder, f"DTS1_{firstname}_{lastname}_{patDiseaseCode}_{curr_date}.txt")
+        file_name = os.path.join(output_folder, f"{firstname}_{lastname}_{patDiseaseCode}_{curr_date}.txt")
         with open(file_name, 'w') as text_file:
             text_file.write(HL7)
 
 
-generateELR(1, 10020, "/Users/SnehaaHari/Desktop/Drop")
+generateELR(10, 10020, "/Users/SnehaaHari/Desktop/Drop")
