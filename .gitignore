@@ -10,6 +10,8 @@ ramesh/
 
 environments/*/*.json
 
+*.venv
+
 # Log file
 *.log
 

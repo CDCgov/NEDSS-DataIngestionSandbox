@@ -7,14 +7,13 @@ import pandas as pd
 import random
 from faker import Faker
 from sqlalchemy.engine import URL
-from sqlalchemy import create_engine
 from dbConnection import *
+from sqlalchemy import create_engine
 
     #if __name__ == "__main__":
     #    numoELRs = int(sys.argv[1])
     #    conditionCode = str(sys.argv[2])
     #    print ("Generating HL7messages for Disease code:", format(conditionCode))
-
 
 #numoELRs = int(sys.argv[1])
 #conditionCode = str(sys.argv[2])
