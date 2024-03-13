@@ -11,6 +11,7 @@ from sqlalchemy.sql import text
 from sqlalchemy import create_engine
 #from decouple import config
 from datetime import datetime, timedelta, date
+from dbConnection import *
 
     #if __name__ == "__main__":
     #    numoELRs = int(sys.argv[1])
@@ -20,12 +21,6 @@ from datetime import datetime, timedelta, date
 
 #numoELRs = int(sys.argv[1])
 #conditionCode = str(sys.argv[2])
-
-# Creating a connection with the database
-host = ''
-user = ''
-password = ''
-database = ''
 
 connection_string = "DRIVER={ODBC Driver 17 for SQL Server};SERVER="+host+";DATABASE="+database+";UID="+user+";PWD="+password
 connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})

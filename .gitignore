@@ -7,6 +7,9 @@ ramesh/
 
 environments/*/*.json
 
+# Database Connection Details
+dbConnection.py
+
 # Log file
 *.log
 
