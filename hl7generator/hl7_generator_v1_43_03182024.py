@@ -542,7 +542,7 @@ class HL7Generator:
         pid11_12 = ""  # PID.11.12 - Address Validity Range
         pid11_13 = ""  # PID.11.13 - Effective Date
         pid11_14 = ""  # PID.11.14 - Expiration Date
-        pid11 = (f"{pid11_1}^{pid11_2}^{pid11_3}^{pid11_5}^{pid11_6}^{pid11_7}^{pid11_9}")
+        pid11 = (f"{pid11_1}^{pid11_2}^{pid11_3}^{pid11_4}^{pid11_5}^{pid11_6}^{pid11_7}^{pid11_9}")
         ## PID.12 - County Code
         pid12 = ""
         ## PID.13 - Phone Number - Home

@@ -1,1 +1,11 @@
-Faker==19.6.2
+botocore
+faker
+jsonschema
+boto3
+datetime
+requests
+aiohttp
+asyncio
+pyodbc
+pandas
+sqlalchemy
