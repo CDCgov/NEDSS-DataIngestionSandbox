@@ -55,11 +55,11 @@ Run the script with the following command-line arguments:
 ## Example Commands
 - Generate 5 EICRs and save them in the output directory:
   ```bash
-  python generate_eicrs.py --num_eicrs 5
+  python eICRGenerator.py --num_eicrs 5
 
 - Generate 100 EICRs and save them to a specific directory:
   ```bash
-  python generate_eicrs.py --num_eicrs 100 --output_dir /path/to/output
+  python eICRGenerator.py --num_eicrs 100 --output_dir /path/to/output
 
 ---
 
