@@ -4,13 +4,14 @@ from datetime import datetime
 from hl7_generator_v1 import *
 
 
-numELRs=10 #default number of messages
+numELRs=1 #default number of messages
 conditionCode=10020 #default condition code
 
 
 instance = HL7Generator()
 instance.set_condition_code(conditionCode)
 instance.queries()  ## Call queries method to populate dataframes
+print("Generating ELRs")
 
 def generate_and_store_messages(numELRs, conditionCode, save_as_zip=False):
     """

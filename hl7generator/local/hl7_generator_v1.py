@@ -12,18 +12,28 @@ from sqlalchemy import create_engine
 from datetime import datetime, timedelta, date
 from functools import cache
 
-
-######################################################################
-##### Database connection details comes from dbConnection module #####
-######################################################################
-host = 'cdc-nbs-alabama-rds-mssql.czya31goozkz.us-east-1.rds.amazonaws.com'
-user = 'nbs_ods'
-password = 'ods'
+print("Connecting to database..")
+host = 'localhost,2433'
+user = 'sa'
+password = 'fake.fake.fake.1234'
 database = 'NBS_MSGOUTE'
 
-connection_string = "DRIVER={ODBC Driver 17 for SQL Server};SERVER="+host+";DATABASE="+database+";UID="+user+";PWD="+password
+connection_string = (
+    "DRIVER={ODBC Driver 17 for SQL Server};"
+    f"SERVER={host};"
+    f"DATABASE={database};"
+    f"UID={user};"
+    f"PWD={password}"
+)
 connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
-engine = create_engine(connection_url)
+
+try:
+    engine = create_engine(connection_url)
+    with engine.connect() as connection:
+        print("Connected to database successfully!")
+except Exception as e:
+    print("Failed to connect to the database.")
+    print(f"Error: {e}")
 
 #################
 # HL7 Generator #
@@ -56,44 +66,44 @@ class HL7Generator:
     @cache
     def queries(self):
 
-        #racesql = """select concat (code, ' : ', code_desc_txt) from nbs_srte.dbo.Race_code;"""
-        racesql = "select concat (code, ' : ', code_desc_txt) from HL7_Generator..RACE;"
+        racesql = """select concat (code, ' : ', code_desc_txt) from nbs_srte.dbo.Race_code;"""
+        #racesql = "select concat (code, ' : ', code_desc_txt) from HL7_Generator..RACE;"
         self.race_df= pd.read_sql(racesql, engine)
 
-        # assigning_authority = """select concat(eid.root_extension_txt, ' : ', o.display_nm)
-        #                         from nbs_odse..Organization o
-        #                         inner join nbs_odse..entity_id eid
-        #                         on eid.entity_uid = o.organization_uid
-        #                         inner join [nbs_odse].[dbo].[Organization_name] org
-        #                         on o.organization_uid = org.organization_uid
-        #                         where cd = 'LAB' and standard_industry_class_cd = 'CLIA';"""
-        assigning_authority = "select concat(root_extension_txt, ' : ', display_nm) from HL7_Generator..ASSIGNING_FILLER_FACILITY;"
+        assigning_authority = """select concat(eid.root_extension_txt, ' : ', o.display_nm)
+                                from nbs_odse..Organization o
+                                inner join nbs_odse..entity_id eid
+                                on eid.entity_uid = o.organization_uid
+                                inner join [nbs_odse].[dbo].[Organization_name] org
+                                on o.organization_uid = org.organization_uid
+                                where cd = 'LAB' and standard_industry_class_cd = 'CLIA';"""
+        #assigning_authority = "select concat(root_extension_txt, ' : ', display_nm) from HL7_Generator..ASSIGNING_FILLER_FACILITY;"
         self.assign_df= pd.read_sql(assigning_authority, engine)
 
-        # sending_facility = """select concat(eid.root_extension_txt, ' : ', o.display_nm)
-        #                         from nbs_odse..Organization o
-        #                         inner join nbs_odse..entity_id eid
-        #                         on eid.entity_uid = o.organization_uid
-        #                         inner join [nbs_odse].[dbo].[Organization_name] org
-        #                         on o.organization_uid = org.organization_uid
-        #                         where cd = 'ORG';"""    
-        sending_facility = "select concat(root_extension_txt, ' : ', display_nm) from HL7_Generator..SENDING_FACILITY;"
+        sending_facility = """select concat(eid.root_extension_txt, ' : ', o.display_nm)
+                                from nbs_odse..Organization o
+                                inner join nbs_odse..entity_id eid
+                                on eid.entity_uid = o.organization_uid
+                                inner join [nbs_odse].[dbo].[Organization_name] org
+                                on o.organization_uid = org.organization_uid
+                                where cd = 'ORG';"""    
+        #sending_facility = "select concat(root_extension_txt, ' : ', display_nm) from HL7_Generator..SENDING_FACILITY;"
         self.sending_df= pd.read_sql(sending_facility, engine)
 
-        # programArea = "SELECT concat (loc.loinc_cd, ' : ', loc.component_name) FROM nbs_srte..loinc_code loc inner join  nbs_srte..loinc_condition locd ON loc.loinc_cd = locd.loinc_cd inner join nbs_srte..condition_code cond ON locd.condition_cd = cond.condition_cd where locd.condition_cd = '" + discode +"';"
-        programArea = "SELECT concat (loinc_cd, ' : ',component_name) FROM HL7_Generator..DISEASE_CODE where condition_cd = '" + self.conditionCode +"';"
+        programArea = "SELECT concat (loc.loinc_cd, ' : ', loc.component_name) FROM nbs_srte..loinc_code loc inner join  nbs_srte..loinc_condition locd ON loc.loinc_cd = locd.loinc_cd inner join nbs_srte..condition_code cond ON locd.condition_cd = cond.condition_cd where locd.condition_cd = '" + self.conditionCode +"';"
+        #programArea = "SELECT concat (loinc_cd, ' : ',component_name) FROM HL7_Generator..DISEASE_CODE where condition_cd = '" + self.conditionCode +"';"
         self.disease_df= pd.read_sql(programArea, engine)
 
-        # studyReason = "SELECT concat (reason_cd, ' : ', reason_desc_txt) FROM nbs_odse..Observation_reason;"
-        studyReason = "SELECT concat (reason_cd, ' : ', reason_desc_txt) FROM HL7_Generator..REASON_CODE;"
+        studyReason = "SELECT concat (reason_cd, ' : ', reason_desc_txt) FROM nbs_odse..Observation_reason;"
+        #studyReason = "SELECT concat (reason_cd, ' : ', reason_desc_txt) FROM HL7_Generator..REASON_CODE;"
         self.reason_df = pd.read_sql(studyReason, engine)
 
-        #specimenSql = "select concat (code, ' : ', code_desc_txt) from nbs_srte.dbo.code_value_general where code_set_nm = 'SPECMN_SRC' and code LIKE '%[a-z]%';"
-        specimenSql = "select concat (code, ' : ', code_desc_txt) from HL7_Generator..SPECIMEN where code LIKE '%[a-z]%';"
+        specimenSql = "select concat (code, ' : ', code_desc_txt) from nbs_srte.dbo.code_value_general where code_set_nm = 'SPECMN_SRC' and code LIKE '%[a-z]%';"
+        #specimenSql = "select concat (code, ' : ', code_desc_txt) from HL7_Generator..SPECIMEN where code LIKE '%[a-z]%';"
         self.specimen_df = pd.read_sql(specimenSql, engine)
 
-        #AltspecimenSql = "select concat (code, ' : ', code_desc_txt) from nbs_srte.dbo.code_value_general where code_set_nm = 'SPECMN_SRC' and code LIKE '%[0-9]%';"
-        AltspecimenSql = "select concat (code, ' : ', code_desc_txt) from HL7_Generator..SPECIMEN where code LIKE '%[0-9]%';"
+        AltspecimenSql = "select concat (code, ' : ', code_desc_txt) from nbs_srte.dbo.code_value_general where code_set_nm = 'SPECMN_SRC' and code LIKE '%[0-9]%';"
+        #AltspecimenSql = "select concat (code, ' : ', code_desc_txt) from HL7_Generator..SPECIMEN where code LIKE '%[0-9]%';"
         self.alt_spm_df = pd.read_sql(AltspecimenSql, engine)
 
         return self.race_df, self.assign_df, self.sending_df, self.disease_df, self.reason_df, self.specimen_df, self.alt_spm_df
@@ -268,12 +278,20 @@ class HL7Generator:
 
         # ------------ Alternate Specimen Data -------------
 
-        alt_specimen_random_row = self.alt_spm_df.sample(n=1)
-        alt_specimen = alt_specimen_random_row.to_string(index=False)
+        # Sample a random row from alt_spm_df
+        alt_specimen_random_row = self.alt_spm_df.sample(n=1) if not self.alt_spm_df.empty else pd.DataFrame()
 
-        AltspecimenTxt = re.sub("^[^_]* : ", "", alt_specimen)
-        AltspecimenCode = re.sub(" : [^_]*", "", alt_specimen).lstrip()
+        # If the random row is empty (i.e., the dataframe was empty), set the values to empty strings
+        if alt_specimen_random_row.empty:
+            AltspecimenTxt = ""
+            AltspecimenCode = ""
+        else:
+            # If a row is selected, process the string
+            alt_specimen = alt_specimen_random_row.to_string(index=False)
 
+            # Remove unwanted parts of the string
+            AltspecimenTxt = re.sub("^[^_]* : ", "", alt_specimen)
+            AltspecimenCode = re.sub(" : [^_]*", "", alt_specimen).lstrip()
 
 
         ##############################################
@@ -453,8 +471,8 @@ class HL7Generator:
         #pid4 = ("{pid4_1}^{pid4_2}^{pid4_3}^{pid4_4}^{pid4_5}^{pid4_6}^{pid4_7}^{pid4_8}^{pid4_9}^{pid4_10}")
         pid4 = ""
         ## PID.5 - Patient Name
-        pid5_1 = lastname  # PID.5.1 - Family Name
-        pid5_2 = firstname  # PID.5.2 - Given Name
+        pid5_1 = "lastname"  # PID.5.1 - Family Name
+        pid5_2 = "firstname"  # PID.5.2 - Given Name
         pid5_3 = "SIM_TEST"  # PID.5.3 - Second And Further Given Names Or Initials Thereof
         pid5_4 = ""  # PID.5.4 - Suffix (e.g., Jr Or Iii)
         pid5_5 = ""  # PID.5.5 - Prefix (e.g., Dr)
@@ -486,9 +504,9 @@ class HL7Generator:
         #pid6 = ("{pid6_1}^{pid6_2}^{pid6_3}^{pid6_4}^{pid6_5}^{pid6_6}^{pid6_7}^{pid6_8}^{pid6_9}^{pid6_10}^{pid6_11}^{pid6_12}^{pid6_13}^{pid6_14}")
         pid6 = ""
         ## PID.7 - Date/Time of Birth
-        pid7 = dob #<yyyymmdd>
+        pid7 = "dob" #<yyyymmdd>
         ## PID.8 - Administrative Sex
-        pid8 = patSex
+        pid8 = "patSex"
         ## PID.9 - Patient Alias
         pid9_1 = "pid9_1"  # PID.9.1 - Family Name
         pid9_2 = "pid9_2"  # PID.9.2 - Given Name
@@ -507,20 +525,20 @@ class HL7Generator:
         #pid9 = ("{pid9_1}^{pid9_2}^{pid9_3}^{pid9_4}^{pid9_5}^{pid9_6}^{pid9_7}^{pid9_8}^{pid9_9}^{pid9_10}^{pid9_11}^{pid9_12}^{pid9_13}^{pid9_14}")
         pid9 = ""
         ## PID.10 - Race
-        pid10_1 = patRaceCode  # PID.10.1 - Identifier
-        pid10_2 = patRace  # PID.10.2 - Text
+        pid10_1 = ""  # PID.10.1 - Identifier
+        pid10_2 = ""  # PID.10.2 - Text
         pid10_3 = ""  # PID.10.3 - Name Of Coding System
         pid10_4 = ""  # PID.10.4 - Alternate Identifier
         pid10_5 = "SIM_TEST"  # PID.10.5 - Alternate Text
         pid10_6 = ""  # PID.10.6 - Name Of Alternate Coding System
         pid10 = (f"{pid10_1}^{pid10_2}^{pid10_5}")
         ## PID.11 - Patient Address
-        pid11_1 = address  # PID.11.1 - Street Address
+        pid11_1 = "address"  # PID.11.1 - Street Address
         pid11_2 = ""   # PID.11.2 - Other Designation
-        pid11_3 = city  # PID.11.3 - City
-        pid11_4 = state_abbr  # PID.11.4 - State Or Province
-        pid11_5 = zip_code  # PID.11.5 - Zip Or Postal Code
-        pid11_6 = country  # PID.11.6 - Country
+        pid11_3 = "city"  # PID.11.3 - City
+        pid11_4 = "state_abbr"  # PID.11.4 - State Or Province
+        pid11_5 = "zip_code"  # PID.11.5 - Zip Or Postal Code
+        pid11_6 = "USA"  # PID.11.6 - Country
         pid11_7 = "SIM_TEST"  # PID.11.7 - Address Type
         pid11_8 = ""  # PID.11.8 - Other Geographic Designation
         pid11_9 = ""  # PID.11.9 - County/Parish Code
@@ -604,7 +622,7 @@ class HL7Generator:
         #pid18 = ("{pid18_1}^{pid18_2}^{pid18_3}^{pid18_4}^{pid18_5}^{pid18_6}^{pid18_7}^{pid18_8}^{pid18_9}^{pid18_10}")
         pid18 = ""
         ## PID.19 - SSN Number - Patient
-        pid19 = ssn
+        pid19 = "ssn"
         ## PID.20 - Driver's License Number - Patient
         pid20_1 = "pid20_1"  # PID.20.1 - License Number
         pid20_2 = "pid20_2"  # PID.20.2 - Issuing State, Province, Country
@@ -614,7 +632,7 @@ class HL7Generator:
         ##PID.21 - Mother's Identifier
         pid21 = ""
         ##PID.22 - Ethnic Group
-        pid22 = ""
+        pid22 = "ethnic"
         ##PID.23 - Birth Place
         pid23 = ""
         ##PID.24 - Multiple Birth Indicator
@@ -654,7 +672,10 @@ class HL7Generator:
         PID = (
         f"PID|"
         f"{pid1}|{pid2}|{pid3}|{pid4}|{pid5}|{pid6}|{pid7}|{pid8}|{pid9}|{pid10}|"
-        f"{pid11}|{pid12}|{pid13}|{pid14}|{pid15}|{pid16}|{pid17}|{pid18}|{pid19}|{pid31}|{pid33}|{pid34}|{pid35}")
+        f"{pid11}|{pid12}|{pid13}|{pid14}|{pid15}|{pid16}|{pid17}|{pid18}|{pid19}|"
+        f"{pid20}|{pid21}|{pid22}|{pid23}|{pid24}|{pid25}|{pid26}|{pid27}|{pid28}|"
+        f"{pid29}|{pid30}|{pid31}|{pid32}|{pid33}|{pid34}|{pid35}"
+)
         
         #######################
         ## -------PV1------- ##
