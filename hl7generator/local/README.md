@@ -1,4 +1,4 @@
-# SyntheaxGenerator
+# Local HL7 Generator
 
 ## Overview
 This script, `generate.py`, is designed for local development. It generates ELR (Electronic Laboratory Report) files based on specified parameters.
@@ -35,17 +35,16 @@ cd local
 ```bash
 python3 -m venv venv
 ```
-
-# Activate the virtual environment
-# On macOS/Linux:
+#### Activate the virtual environment
+#### On macOS/Linux:
 ```bash
 source venv/bin/activate
 ```
-# On Windows:
+#### On Windows:
 ```bash
 venv\Scripts\activate
 ```
-# Install libraries
+#### Install libraries
 Install the required Python packages using [`requirements.txt`](hl7generator/local/requirements.txt):
 ```bash
 pip install -r requirements.txt
