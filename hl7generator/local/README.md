@@ -45,13 +45,13 @@ source venv/bin/activate
 venv\Scripts\activate
 ```
 #### Install libraries
-Install the required Python packages using [`requirements.txt`](hl7generator/local/requirements.txt):
+Install the required Python packages using [`requirements.txt`](requirements.txt):
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 3. Update Connection Details
-Edit the [`generate.py`](hl7generator/local/generate.py) file to update the connection details:
+Edit the [`generate.py`](generate.py) file to update the connection details:
     Replace user and password in the file (line 29, 30) with your specific credentials.
     By default, the host is set to DTS1. Update this value if necessary.
 
