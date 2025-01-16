@@ -28,7 +28,7 @@ brew install --no-sandbox msodbcsql17
 Clone this repository to your local machine:
 ```bash
 git clone <repository-url>
-cd local
+cd hl7generator/local
 ```
 
 ### 2. Create Virtual Environment
