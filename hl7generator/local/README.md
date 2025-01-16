@@ -61,3 +61,6 @@ Run the script to generate ELRs. Run the following command with the following pa
     10101: Condition code.
     34703-9: Disease code (e.g., Hepatitis)
 The following command, when run, will create 10 ELRs with the above condition code and LOINC code for Hepatitis.
+```bash
+python3 gennerate.py 10 10101 34703-9
+```
