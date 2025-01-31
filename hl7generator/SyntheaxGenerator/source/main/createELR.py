@@ -1,5 +1,37 @@
 import csv
 import os
+import re
+from datetime import datetime
+
+# Function to clean up the CSV by keeping only the desired columns, removing trailing numbers, and reformatting DOB
+def clean_csv(input_csv, output_csv, columns_to_keep):
+    with open(input_csv, 'r') as infile, open(output_csv, 'w', newline='') as outfile:
+        reader = csv.DictReader(infile)
+        # Create a new list of fieldnames that only includes the columns to keep
+        fieldnames = [field for field in reader.fieldnames if field in columns_to_keep]
+        
+        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+        writer.writeheader()
+        
+        for row in reader:
+            # Clean 'FIRST' and 'LAST' columns to remove trailing numbers
+            if 'FIRST' in row:
+                row['FIRST'] = re.sub(r'\d+$', '', row['FIRST']).strip()
+            if 'LAST' in row:
+                row['LAST'] = re.sub(r'\d+$', '', row['LAST']).strip()
+            
+            # Reformat the 'BIRTHDATE' to 'YYYYMMDD' format if it's in 'YYYY-MM-DD' format
+            if 'BIRTHDATE' in row and row['BIRTHDATE']:
+                try:
+                    dob = datetime.strptime(row['BIRTHDATE'], '%Y-%m-%d')
+                    row['BIRTHDATE'] = dob.strftime('%Y%m%d')
+                except ValueError:
+                    # Handle the case where the date might not be in the expected format
+                    row['BIRTHDATE'] = ''  # or some fallback value
+            
+            # Write each row with only the desired columns
+            filtered_row = {key: value for key, value in row.items() if key in columns_to_keep}
+            writer.writerow(filtered_row)
 
 # Function to replace placeholders in the HL7 message
 def find_and_replace_hl7(hl7_message, csv_row):
@@ -59,7 +91,15 @@ def update_hl7_files_with_csv(csv_file, hl7_folder):
 # Usage
 script_dir = os.path.dirname(os.path.abspath(__file__))
 home_dir = os.path.expanduser("~")
-csv_file = os.path.join(script_dir, '../assets/data/patients-scrambled.csv')
-hl7_folder = os.path.join(home_dir, "Desktop/IH")  # Folder containing the HL7 files
+csv_file = os.path.join(script_dir, '/data/csv/patients.csv')
+cleaned_csv_file = os.path.join(script_dir, '../assets/data/patients_cleaned.csv')
 
-update_hl7_files_with_csv(csv_file, hl7_folder)
+# Columns you want to keep in the CSV
+columns_to_keep = ['LAST', 'FIRST', 'BIRTHDATE', 'GENDER', 'ADDRESS', 'CITY', 'STATE', 'ZIP', 'RACE', 'ETHNICITY', 'SSN']
+
+# Clean the CSV
+clean_csv(csv_file, cleaned_csv_file, columns_to_keep)
+
+# After cleaning, update the HL7 files with the cleaned CSV
+hl7_folder = os.path.join(home_dir, "Desktop/IH")  # Folder containing the HL7 files
+update_hl7_files_with_csv(cleaned_csv_file, hl7_folder)
