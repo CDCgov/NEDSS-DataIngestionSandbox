@@ -1,6 +1,6 @@
-# EICR Generator
+# eICR Generator
 
-This Python script generates Electronic Initial Case Reports (EICRs) based on a provided XML template. The generated EICRs are saved to a specified directory, and all fields in the EICR are dynamically populated using randomized data for testing purposes.
+This Python script generates Electronic Initial Case Reports (eICRs) based on a provided XML template. The generated eICRs are saved to a specified directory, and all fields in the EICR are dynamically populated using randomized data for testing purposes.
 
 ---
 
@@ -19,7 +19,7 @@ This Python script generates Electronic Initial Case Reports (EICRs) based on a 
 
 ## Features
 - **Dynamic Data Generation**: Uses the `Faker` library to populate patient and author information such as names, addresses, SSNs, and email addresses.
-- **Template-Based EICRs**: Generates sample eICRs using an XML template with all the required components, ensuring consistent structure.
+- **Template-Based eICRs**: Generates sample eICRs using an XML template with all the required components, ensuring consistent structure.
 - **Input Validation**: Restricts the number of eICRs to generate between 1 and 10,000.
 - **Customizable Output**: Save eICRs to a specified directory or use the default output directory.
 
@@ -47,27 +47,33 @@ This Python script generates Electronic Initial Case Reports (EICRs) based on a 
 ## Usage
 Run the script with the following command-line arguments:
 
-- `--num_eicrs`: Number of EICRs to generate (required; integer between 1 and 10,000).
-- `--output_dir`: Directory to save the generated EICRs (optional; defaults to the output directory).
+- `--num_eicrs`: Number of eICRs to generate (required; integer between 1 and 10,000).
+- `--output_dir`: Directory to save the generated eICRs (optional; defaults to the output directory).
+- `--num_conditions`: Number of conditions to be added in the generated eICRs (optional; defaults to the output directory).
 
 ---
 
 ## Example Commands
-- Generate 5 EICRs and save them in the output directory:
+- Generate 5 eICRs and save them in the output directory:
   ```bash
   python eICRGenerator.py --num_eicrs 5
 
-- Generate 100 EICRs and save them to a specific directory:
+- Generate 5 eICRs with 3 conditions each and save them in the output directory:
+  ```bash
+  python eICRGenerator.py --num_eicrs 5 --num_conditions 3
+
+- Generate 100 eICRs and save them to a specific directory:
   ```bash
   python eICRGenerator.py --num_eicrs 100 --output_dir /path/to/output
 
----
+---                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 
 ## Input Validation
 - `--num_eicrs`: Must be an integer between 1 and 10,000. An error is raised if the input is out of range or invalid.
 - `--output_dir`: If specified, the directory is validated, and it will be created if it does not exist.
+- `--num_conditions`: If specified, the number is validated, and respective conditions will be added to the eICRs.
 
----
+
 
 ## Customization
 - The generated sample eICRs structure is based on the `eICR-CCDA-template.xml` file. Update this file in the template folder to customize the eICR format or add any extra components.
