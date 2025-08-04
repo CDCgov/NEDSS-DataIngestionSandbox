@@ -1,4 +1,5 @@
 import os
+import sys
 import datetime
 import random
 import uuid
@@ -109,6 +110,50 @@ def generate_social_history(gender_code, gender):
         </entry>
         """
     return table_html + entry_xml
+
+def generate_clinical_info_section(num_conditions=0):
+    conditions = [
+        {"code": "2576002", "displayName": "Trachoma (disorder)"},
+        {"code": "27681008", "displayName": "Chronic gonorrhea (disorder)"},
+        {"code": "45312009", "displayName": "Pneumonia in typhoid fever (disorder)"},
+        {"code": "66071002", "displayName": "Viral hepatitis type B (disorder)"},
+        {"code": "840539006", "displayName": "Disease caused by severe acute respiratory syndrome coronavirus 2 (disorder)"},
+        {"code": "186747009", "displayName": "Coronavirus infection (disorder)"},
+        {"code": "713084008", "displayName": "Pneumonia caused by Human coronavirus (disorder)"},
+        {"code": "767809001", "displayName": "Chronic hepatitis C caused by hepatitis C virus genotype 6 (disorder)"},
+        {"code": "409678004", "displayName": "Dengue hemorrhagic fever, grade III (disorder)"},
+        {"code": "409552002", "displayName": "Chronic Q fever (disorder)"},
+        {"code": "72631000119101", "displayName": "HIV II infection category B2 (disorder)"},
+        {"code": "1087041000119100", "displayName": "Infection of kidney and ureter caused by Neisseria gonorrhoeae (disorder)"},
+        {"code": "25102003", "displayName": "Acute type A viral hepatitis (disorder)"},
+    ]
+
+    if num_conditions <= 0:
+        return ""
+
+    selected = random.sample(conditions, min(num_conditions, len(conditions)))
+
+    entries_xml = ""
+    for c in selected:
+        entries_xml += f"""
+        <entry>
+            <observation classCode="OBS" moodCode="EVN">
+                <code code="INV169" codeSystem="2.16.840.1.114222.4.5.232" codeSystemName="PHIN Questions" displayName="Condition" />
+                <value code="{c['code']}" codeSystem="2.16.840.1.113883.6.96" codeSystemName="SNOMED CT" displayName="{c['displayName']}" xsi:type="CE" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" />
+            </observation>
+        </entry>"""
+
+    clinical_info_xml = f"""
+    <component>
+        <section>
+            <id root="2.16.840.1.113883.19" extension="2.16.840.1.3283333530585087500.840539006" assigningAuthorityName="LR" />
+            <code code="55752-0" codeSystem="2.16.840.1.113883.6.1" codeSystemName="LOINC" displayName="Clinical Information" />
+            <title>CLINICAL INFORMATION</title>
+            {entries_xml}
+        </section>
+    </component>"""
+
+    return clinical_info_xml.strip()
 
 
 def generate_html_table(data, headers):
@@ -397,7 +442,7 @@ def generate_medications_administered_data(num_rows):
 
 
 # Main function to generate the full eICR
-def generate_eicr(eicr_template):
+def generate_eicr(eicr_template, num_conditions=0):
     gender_code, gender = generate_gender()
     race, ethnicity = generate_race_and_ethnicity()
     patient_first_name = fake.first_name()
@@ -445,6 +490,8 @@ def generate_eicr(eicr_template):
                                                                        encounter_extension=generate_extension_id(),
                                                                        social_history_data=generate_social_history(
                                                                            gender_code, gender),
+                                                                       clinical_information_data=generate_clinical_info_section(
+                                                                           num_conditions),
                                                                        reason_for_visit_data=generate_reason_for_visit_data(
                                                                            random.randint(0, 1)),
                                                                        history_of_present_illness_data=generate_history_of_present_illness_data(
@@ -482,15 +529,24 @@ if __name__ == "__main__":
         "--num_eicrs",
         type=validate_num_eicrs,
         required=True,
-        help="Number of EICRs to generate."
-    )
+        help="Number of EICRs to generate.")
     parser.add_argument(
         "--output_dir",
         type=str,
         default=os.path.join(current_dir, "output"),
         help="Directory to save the generated eICRs. Default is the current directory.")
+    parser.add_argument(
+        "--num_conditions",
+        type=int,
+        default=0,
+        help="Number of clinical conditions to include in the generated eICRs. Default is 0.")
 
     args = parser.parse_args()
+
+    if not (1 <= args.num_conditions <= 10):
+        print("ERROR: The number of clinical conditions must be between 1 and 10.")
+        sys.exit(1)
+
 
     output_dir = args.output_dir
     if not os.path.exists(output_dir):
@@ -500,7 +556,7 @@ if __name__ == "__main__":
         template = file_template.read()
 
     for _ in range(1, args.num_eicrs + 1):
-        first_name, last_name, eicr_data = generate_eicr(template.strip())
+        first_name, last_name, eicr_data = generate_eicr(template.strip(), num_conditions=args.num_conditions)
 
         output_file_path = os.path.join(output_dir, f"{first_name}_{last_name}_CDA_eICR.xml")
         with open(output_file_path, "w", newline="", encoding="utf-8") as f:

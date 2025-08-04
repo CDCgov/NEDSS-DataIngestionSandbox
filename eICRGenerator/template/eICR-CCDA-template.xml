@@ -17,6 +17,7 @@
         <patientRole>
             <id extension="{patient_id}" root="{patient_root}"/>
             <id extension="{ssn}" root="2.16.840.1.113883.4.1"/>
+            <id assigningAuthorityName="NBS" extension="Original_Global_Unique_ID" root="{uuid}"/>
             <addr use="HP">
                 <streetAddressLine>{street_address}</streetAddressLine>
                 <city>{city}</city>
@@ -221,6 +222,7 @@
                     {social_history_data}
                 </section>
             </component>
+            {clinical_information_data}
             <component>
                 <section>
                     <templateId extension="2015-08-01" root="2.16.840.1.113883.10.20.22.2.2.1"/>
