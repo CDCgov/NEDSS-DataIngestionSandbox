@@ -27,7 +27,7 @@
         <springfox.swagger.ui.version>2.9.2</springfox.swagger.ui.version>
  		<jjwt.version>0.11.1</jjwt.version>
         <commons.version>2.5</commons.version>
-        <camel.core.version>3.0.0</camel.core.version>
+        <camel.core.version>3.21.4</camel.core.version>
 		<camel.kafka.version>3.0.0</camel.kafka.version>
         <camel.filestarter.version>3.0.0</camel.filestarter.version>
         <camel.hl7.version>3.0.0-RC3</camel.hl7.version>
